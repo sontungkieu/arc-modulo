@@ -31,6 +31,9 @@ git switch main
 python3 scripts/bootstrap_upstreams.py
 ```
 
+Bootstrap fetch từng branch qua HTTP/1.1 và retry tối đa ba lần; nếu mạng đứt,
+chạy lại cùng lệnh sẽ giữ các worktree đã hoàn thành và tiếp tục phần còn lại.
+
 ## Dựng môi trường bằng uv
 
 Không copy `.venv` giữa máy. Python 3.10 và dependency đã được khóa trong ba

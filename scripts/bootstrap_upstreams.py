@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import subprocess
+import time
 from pathlib import Path
 
 
@@ -27,6 +28,36 @@ def run(*args: str, cwd: Path) -> str:
     return completed.stdout.strip()
 
 
+def fetch_branch(root: Path, branch: str, retries: int) -> None:
+    """Fetch one paper history with bounded retries and HTTP/1.1 stability."""
+    refspec = f"refs/heads/{branch}:refs/remotes/origin/{branch}"
+    command = (
+        "git",
+        "-c",
+        "http.version=HTTP/1.1",
+        "fetch",
+        "--no-tags",
+        "origin",
+        refspec,
+    )
+    for attempt in range(1, retries + 1):
+        completed = subprocess.run(command, cwd=root, check=False)
+        if completed.returncode == 0:
+            return
+        if attempt == retries:
+            raise SystemExit(
+                f"Fetch failed for {branch} after {retries} attempts "
+                f"(last exit code {completed.returncode})"
+            )
+        delay = min(5 * attempt, 15)
+        print(
+            f"RETRY {branch}: attempt {attempt}/{retries} failed; "
+            f"waiting {delay}s",
+            flush=True,
+        )
+        time.sleep(delay)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -34,22 +65,25 @@ def main() -> int:
         action="store_true",
         help="also initialize the optional discrete_diffusion/mdlm submodule",
     )
+    parser.add_argument(
+        "--fetch-retries",
+        type=int,
+        default=3,
+        help="bounded retries per paper branch (default: 3)",
+    )
     args = parser.parse_args()
+    if args.fetch_retries < 1:
+        parser.error("--fetch-retries must be at least 1")
 
     root = Path(__file__).resolve().parents[1]
     git_root = Path(run("git", "rev-parse", "--show-toplevel", cwd=root))
     if git_root != root:
         raise SystemExit(f"Run from a fresh main worktree; expected {root}, got {git_root}")
 
-    refspecs = [
-        f"refs/heads/{branch}:refs/remotes/origin/{branch}"
-        for _, branch, _ in PAPERS
-    ]
-    run("git", "fetch", "origin", *refspecs, cwd=root)
-
     upstream = root / "upstream"
     upstream.mkdir(exist_ok=True)
     for paper, branch, commit in PAPERS:
+        fetch_branch(root, branch, args.fetch_retries)
         destination = upstream / paper
         if destination.exists() and any(destination.iterdir()):
             actual = run("git", "rev-parse", "HEAD", cwd=destination)
