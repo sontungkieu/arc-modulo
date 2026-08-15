@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "paper": "A General Framework for Inference-Time Scaling and Steering of Diffusion Models",
+  "upstream_commit": "9413005dee1e79f80fb4561a4a7ac8eec704281b",
+  "run_id": "fk-steering-20260811-1103-r5",
+  "modal_profile": "kieusontung6",
+  "accelerator": "L4",
+  "scientific_payload_status": "COMPLETED",
+  "modal_wrapper_status": "FAILED_AFTER_RESULT",
+  "modal_wrapper_error": "ModuleNotFoundError: No module named 'torch' in the base-interpreter provenance probe after all nine generations and metrics were saved.",
+  "prompt": "a photo of a brown knife and a blue donut",
+  "seeds": [42, 43, 44],
+  "particles": 4,
+  "inference_steps": 100,
+  "lambda": 2.0,
+  "reward": "ImageReward",
+  "model_upstream": "stabilityai/stable-diffusion-2-1",
+  "model_runtime": "sd2-community/stable-diffusion-2-1",
+  "model_override_reason": "The deprecated upstream Hugging Face repository returned 401; its public community mirror was used without credentials.",
+  "image_reward_across_seed_runs": {
+    "fk_max": {
+      "per_seed_mean": [0.0792735517, 0.0572693646, 1.1498997211],
+      "mean_of_means": 0.4288142125,
+      "sample_sd_of_means": 0.624575,
+      "mean_best_of_4": 1.5762791236
+    },
+    "fk_diff": {
+      "per_seed_mean": [0.0792735517, 1.7450709343, 1.6586343050],
+      "mean_of_means": 1.1609929303,
+      "sample_sd_of_means": 0.937793,
+      "mean_best_of_4": 1.5848322312
+    },
+    "base": {
+      "per_seed_mean": [0.0792735517, 0.7493441105, 1.1498997211],
+      "mean_of_means": 0.6595057944,
+      "sample_sd_of_means": 0.540937,
+      "mean_best_of_4": 1.5471275250
+    }
+  },
+  "qualification": "Partial qualitative/one-prompt reproduction, not the full GenEval table. Three seeds are insufficient for a superiority claim."
+}
