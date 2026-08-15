@@ -7,6 +7,7 @@
   kèm source generator và bản text trích xuất để kiểm tra.
 - `SUITE_README.md`: hướng dẫn vận hành đầy đủ của suite gốc.
 - `THIRD_PARTY_LICENSE_STATUS.md`: trạng thái license ở đúng pinned commit.
+- `PACKAGING_VALIDATION.md`: branch parent, checksum, bootstrap và artifact QA.
 
 Các PDF paper gốc không được mirror trong repo; URL canonical và commit code
 nằm trong `../UPSTREAMS.toml`.
