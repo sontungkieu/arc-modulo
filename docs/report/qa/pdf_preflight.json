@@ -1,0 +1,12 @@
+{
+  "schema": "pdf_read_preflight/1",
+  "verdict": "PASS",
+  "file": "output/pdf/diffusion_smc_reproduction_report.pdf",
+  "sha256": "719fafde7919cf6c7231b112704b861c24261ea6d5f8ff10836584f584e6bc98",
+  "declared_page_count": 15,
+  "enumerated_page_count": 15,
+  "reader_page_count": 15,
+  "warnings": [],
+  "generated_at": "2026-08-12T11:35:23.420507+00:00",
+  "tool": "pdf_read_preflight/1.0.0"
+}

@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "path": "results/null_tta_table1.json",
+      "bytes": 13894,
+      "sha256": "d7ee1b8cf199ff65efb10bf03040c693a311171ac5f5792c09ba5b91f127ad4c"
+    },
+    {
+      "path": "results/null_tta_run_manifest.json",
+      "bytes": 30851,
+      "sha256": "f51d10d4788b92fdeb366ae0151a222ca5c2c52d71699a871b5a397c1386d676"
+    },
+    {
+      "path": "results/das_rescue_multiseed.json",
+      "bytes": 3521,
+      "sha256": "1f81d0eea1bf7a5f4ce7f899364050a46eefc6ecab25320e4b47d1524f2e3a28"
+    },
+    {
+      "path": "results/fk_steering_one_prompt.json",
+      "bytes": 1773,
+      "sha256": "857c4f5515b3bbf01a88a2aff9b660e002968ec873bd36a9376e938306388f25"
+    },
+    {
+      "path": "results/fk_correctors_table_a1_exact.json",
+      "bytes": 89688,
+      "sha256": "5cc589ff8b8e8011f22aab38a9d8144ffa2eaa05509340513252e0ca40ac4398"
+    },
+    {
+      "path": "results/modal_billing_final.json",
+      "bytes": 3607,
+      "sha256": "44fe3fe2a20e71137f74a596c2b35d92de5962e1816b3640a54a1be3e5987738"
+    },
+    {
+      "path": "outputs/kaggle_jobs/das_rescue_seed42_t4x2_r6_20260811T201300Z/output/kaggle_job_ops/das-seed42-numba42-rescue-t4x2-r6-20260811T201300Z/diagnostics/notebook_output/das_metrics.json",
+      "bytes": 4507,
+      "sha256": "0ceb795b8a8be74ab53127e37eb0defc8a5ee060c5122f5e55856281610fbb8e"
+    },
+    {
+      "path": "outputs/kaggle_jobs/das_rescue_seed42_t4x2_r6_20260811T201300Z/output/kaggle_job_ops/das-seed42-numba42-rescue-t4x2-r6-20260811T201300Z/diagnostics/das_kaggle_summary.json",
+      "bytes": 2345,
+      "sha256": "22e5478f153c9996ca41cef954c87954b703c54b630af2b444525ee66294ab60"
+    },
+    {
+      "path": "outputs/kaggle_jobs/das_rescue_seed42_t4x2_r6_20260811T201300Z/output/kaggle_job_ops/standalone/accelerator_summary.json",
+      "bytes": 3852,
+      "sha256": "404fa61e8095606fb909027e98f2e0900130661889ce16fd0ee7e91f23a83f83"
+    }
+  ],
+  "generated_tex": [
+    "report/generated_final_metrics.tex",
+    "report/generated_null_seed_rows.tex",
+    "report/generated_null_method_rows.tex",
+    "report/generated_null_validation_rows.tex",
+    "report/generated_das_rescue_rows.tex",
+    "report/generated_fkc_rows.tex"
+  ],
+  "generated_documents": [
+    "REPORT.md"
+  ],
+  "figures": [
+    "report/figures/fig_fk_steering_variance_final.pdf",
+    "report/figures/fig_fk_steering_variance_final.png",
+    "report/figures/fig_fkc_relative_error_final.pdf",
+    "report/figures/fig_fkc_relative_error_final.png",
+    "report/figures/fig_fkc_run_variance_final.pdf",
+    "report/figures/fig_fkc_run_variance_final.png",
+    "report/figures/fig_null_tta_seed_variance.pdf",
+    "report/figures/fig_null_tta_seed_variance.png",
+    "report/figures/fig_null_tta_table1.pdf",
+    "report/figures/fig_null_tta_table1.png",
+    "report/figures/fig_das_rescue_samples.pdf",
+    "report/figures/fig_das_rescue_samples.png",
+    "report/figures/fig_das_rescue_variance.pdf",
+    "report/figures/fig_das_rescue_variance.png",
+    "report/figures/fig_das_kaggle_rescue.pdf",
+    "report/figures/fig_das_kaggle_rescue.png"
+  ]
+}

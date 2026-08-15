@@ -1,0 +1,83 @@
+{
+  "schema_version": 2,
+  "billing_period": [
+    "2026-08-01",
+    "2026-09-01"
+  ],
+  "currency": "USD",
+  "guard": {
+    "budget_per_workspace": 30.0,
+    "reserve_per_workspace": 1.0,
+    "hard_limit_per_workspace": 29.0
+  },
+  "manifest_path": "/mnt/c/Users/Tung/Documents/Research/diffusion_smc_repro/results/null_tta_run_manifest.json",
+  "manifest_sha256": "f51d10d4788b92fdeb366ae0151a222ca5c2c52d71699a871b5a397c1386d676",
+  "ledger_path": "/home/tung/.codex/state/modal-gpu-ops/run_ledger.jsonl",
+  "ledger_sha256": "278517c574f55245c4b751f15f9a362dfd7875858f2f7b90004d668d13dd9b64",
+  "snapshots": {
+    "kieusontung6": {
+      "final_reported_usage": 27.68262767,
+      "canonical_run_cost": 21.41181362,
+      "all_null_tta_attempts_cost": 24.20111955,
+      "canonical_app_count": 10,
+      "provider_billed_canonical_app_count": 10,
+      "canonical_app_ids": [
+        "ap-4RJKne9j9bJkZvAjNeO4kr",
+        "ap-EhL602nCORREd44mAl9sdF",
+        "ap-Plupa6zzHhBhgA99W8nr4c",
+        "ap-Wtu6lIxH7hxAsJ8la0xXdn",
+        "ap-bJEo9oTAkBCFveCrgnQWqM",
+        "ap-cUoKoQYUMIhYm3v1ylHyOS",
+        "ap-eWLSbzADfnCZtOrDU38iGq",
+        "ap-hrg6KCZ2qcjd1mDROwyqzT",
+        "ap-oLMlJunHXRzneV1KJeToNf",
+        "ap-vOVk7H5YkA8jqjtSGw3I0o"
+      ],
+      "reported_at_utc": "2026-08-12T08:52:18+00:00",
+      "raw_report_path": "remote_artifacts/modal_billing/kieusontung6/2026-08-01_2026-09-01_20260812T085218Z.json",
+      "raw_report_sha256": "4ac244f2cacf96ebad9ab4906c00624e82e05cae28c7afaa0b18812377c46316"
+    },
+    "kieusontung8": {
+      "final_reported_usage": 25.0538639,
+      "canonical_run_cost": 20.41732438,
+      "all_null_tta_attempts_cost": 23.32319388,
+      "canonical_app_count": 8,
+      "provider_billed_canonical_app_count": 8,
+      "canonical_app_ids": [
+        "ap-2NqphoRjinaiJ9HzCdrFqv",
+        "ap-5KpOupb5DDd5Tcrt2G7bxn",
+        "ap-9UYNyhr6Jxrv0MRb7OLUfo",
+        "ap-NilZCSnuR7G4LjJXEBzmiE",
+        "ap-PCPkHCmWMERg8PY0IuCDv2",
+        "ap-daEtiAqbXOdG2nmA7F6ECH",
+        "ap-hnMLuhsuyyPEgYsaF36nIk",
+        "ap-spzuDGQhDUTrnNWmoL41hy"
+      ],
+      "reported_at_utc": "2026-08-12T08:52:26+00:00",
+      "raw_report_path": "remote_artifacts/modal_billing/kieusontung8/2026-08-01_2026-09-01_20260812T085226Z.json",
+      "raw_report_sha256": "0531abfdd7e4b45cce8db3da5d93b31c269b52f01f43c4f57d15794b7d445d35"
+    },
+    "phamvanvuhoan": {
+      "final_reported_usage": 27.28569455,
+      "canonical_run_cost": 25.07241921,
+      "all_null_tta_attempts_cost": 26.11764876,
+      "canonical_app_count": 8,
+      "provider_billed_canonical_app_count": 8,
+      "canonical_app_ids": [
+        "ap-6Fo9VucFbz8MOxNusTGzgN",
+        "ap-MPGcs8W1M9nPCsEWQkC3sv",
+        "ap-OemB5x6B8QdULxY2vx9gdJ",
+        "ap-aXdn4y1E1YPrG1pbxEXTdf",
+        "ap-llVXxbvkx6ukSHPo5nCbQe",
+        "ap-q16rial3SBpsGNarT1tvMm",
+        "ap-s93vhxqGbL4zHkGIXoMDRb",
+        "ap-ynuafdqsH9mCyTdu9mMHIv"
+      ],
+      "reported_at_utc": "2026-08-12T08:52:34+00:00",
+      "raw_report_path": "remote_artifacts/modal_billing/phamvanvuhoan/2026-08-01_2026-09-01_20260812T085234Z.json",
+      "raw_report_sha256": "1624bb60c322797ef68459ab451551a0ad2b2100dbe75fa9fb4a1773fe1ee98d"
+    }
+  },
+  "all_under_hard_limit": true,
+  "qualification": "Provider-reported billing may lag. canonical_run_cost joins rows by the exact 26 scientific app ids behind 25 canonical artifact records, including the canceled source-generation app whose four committed prompt pairs were hash-validated and recovered. all_null_tta_attempts_cost also includes canaries and excluded canceled/failed attempts."
+}

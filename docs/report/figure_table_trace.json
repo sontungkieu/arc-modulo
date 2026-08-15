@@ -1,0 +1,131 @@
+{
+  "figure_table_trace": [
+    {
+      "artifact_id": "fig_das_primary",
+      "source_data": [
+        "results/das_gmm_multiseed.json"
+      ],
+      "transformation": {
+        "script": "report/build_artifacts.py",
+        "sha256": "841cb5ec702def6514a45ab256cad49541c29c808f32b19af3f2d05206e6fcbb"
+      },
+      "caption_claim": "Shows paper points, five reproduction seeds, aggregate means, and within-seed EMD subsample variability without treating reward as the primary metric.",
+      "supported_manuscript_claims": [
+        {
+          "locator": "DAS: t\u00e1i l\u1eadp GMM nhi\u1ec1u seed / K\u1ebft qu\u1ea3 nhi\u1ec1u seed",
+          "claim": "DAS is evaluated primarily by EMD and target-mode coverage, with reward gap secondary."
+        }
+      ],
+      "limitations": [
+        "The paper provides point estimates without seed-level uncertainty.",
+        "The EMD y-axis is logarithmic."
+      ]
+    },
+    {
+      "artifact_id": "fig_das_modes",
+      "source_data": [
+        "results/das_gmm_multiseed.json"
+      ],
+      "transformation": {
+        "script": "report/build_artifacts.py",
+        "sha256": "841cb5ec702def6514a45ab256cad49541c29c808f32b19af3f2d05206e6fcbb"
+      },
+      "caption_claim": "Reports nearest-center mode mass and per-seed mode-fidelity diagnostics for DAS.",
+      "supported_manuscript_claims": [
+        {
+          "locator": "DAS: t\u00e1i l\u1eadp GMM nhi\u1ec1u seed / K\u1ebft qu\u1ea3 nhi\u1ec1u seed",
+          "claim": "Mode fidelity is checked rather than inferred from raw reward."
+        }
+      ],
+      "limitations": [
+        "Nearest-center assignment and the 1 percent active-mode threshold are reproduction diagnostics, not preregistered paper metrics."
+      ]
+    },
+    {
+      "artifact_id": "fig_das_samples",
+      "source_data": [
+        "remote_artifacts/das-gmm-seed*/**/das_samples.npz",
+        "results/das_gmm_multiseed.json"
+      ],
+      "transformation": {
+        "script": "report/build_artifacts.py",
+        "sha256": "841cb5ec702def6514a45ab256cad49541c29c808f32b19af3f2d05206e6fcbb"
+      },
+      "caption_claim": "Displays target and objectively selected best, median, and worst DAS seeds by EMD.",
+      "supported_manuscript_claims": [
+        {
+          "locator": "DAS: t\u00e1i l\u1eadp GMM nhi\u1ec1u seed / K\u1ebft qu\u1ea3 nhi\u1ec1u seed",
+          "claim": "The report does not cherry-pick a visually favorable seed."
+        }
+      ],
+      "limitations": [
+        "Scatter plots are subsampled for legibility and are diagnostic rather than the verdict source."
+      ]
+    },
+    {
+      "artifact_id": "fig_fk_steering_variance",
+      "source_data": [
+        "results/fk_steering_one_prompt.json"
+      ],
+      "transformation": {
+        "script": "report/build_artifacts.py",
+        "sha256": "841cb5ec702def6514a45ab256cad49541c29c808f32b19af3f2d05206e6fcbb"
+      },
+      "caption_claim": "Shows large seed-to-seed ImageReward variation and rank changes among three samplers for one prompt.",
+      "supported_manuscript_claims": [
+        {
+          "locator": "FK Steering: m\u1ed9t prompt v\u00e0 variance",
+          "claim": "One prompt and three seeds do not support a benchmark-wide superiority claim."
+        }
+      ],
+      "limitations": [
+        "Only one prompt and three seeds were evaluated; model runtime used a public community mirror."
+      ]
+    },
+    {
+      "artifact_id": "fig_fkc_relative_error",
+      "source_data": [
+        "results/fk_correctors_table_a1_scaled.json"
+      ],
+      "transformation": {
+        "script": "report/build_artifacts.py",
+        "sha256": "841cb5ec702def6514a45ab256cad49541c29c808f32b19af3f2d05206e6fcbb"
+      },
+      "caption_claim": "Shows relative cell-wise differences between the scaled reproduction and the full paper Table A1.",
+      "supported_manuscript_claims": [
+        {
+          "locator": "FK Correctors: Table A1 subset thu nh\u1ecf",
+          "claim": "Some cells are close, but the scaled run is not an exact numeric reproduction."
+        }
+      ],
+      "limitations": [
+        "The reproduction uses 2000 samples and 200 steps instead of 10000 and 1000, and omits BDC.",
+        "Color values are clipped at plus or minus 200 percent while annotations retain actual values."
+      ]
+    },
+    {
+      "artifact_id": "fig_das_kaggle_portability",
+      "source_data": [
+        "results/das_kaggle_t4x2_portability.json",
+        "remote_artifacts/das-gmm-seed42-20260811-r2/**/das_metrics.json",
+        "outputs/kaggle_jobs/das_seed42_t4x2_20260811T155327Z/**/das_metrics.json"
+      ],
+      "transformation": {
+        "script": "report/build_artifacts.py",
+        "sha256": "841cb5ec702def6514a45ab256cad49541c29c808f32b19af3f2d05206e6fcbb"
+      },
+      "caption_claim": "Compares paper, Modal L4, and Kaggle T4x2 DAS EMD and reward-gap diagnostics without merging the duplicate seed into the multi-seed aggregate.",
+      "supported_manuscript_claims": [
+        {
+          "locator": "DAS: portability tr\u00ean Kaggle T4x2",
+          "claim": "The Kaggle run passes the within-run ranking criterion but fails paper numeric match and same-seed cross-backend numeric portability."
+        }
+      ],
+      "limitations": [
+        "Modal and Kaggle share seed 42, so this is an environment-sensitive portability probe rather than an independent replicate.",
+        "EMD error bars are within-seed subsample SD, not cross-seed uncertainty.",
+        "The Kaggle allocation exposes two T4 GPUs, but the official DAS notebook uses one CUDA device."
+      ]
+    }
+  ]
+}

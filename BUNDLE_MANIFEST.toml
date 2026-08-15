@@ -1,0 +1,59 @@
+schema_version = 1
+created = "2026-08-15"
+python = "3.10"
+environment_manager = "uv"
+layout = "thin main suite plus four history-preserving paper branches"
+
+[included]
+upstream_snapshots = false
+upstream_git_history = "paper branches"
+upstream_bootstrap = "scripts/bootstrap_upstreams.py"
+frozen_lockfiles = 3
+runner_wrappers = true
+machine_readable_results = true
+report_latex_and_pdf = true
+slides_source_pdf_and_vi_script = true
+metric_explainer = true
+full_local_zip = "diffusion-smc-repro-friend-kit-20260815.zip contains tracked source snapshots"
+
+[excluded]
+secrets = true
+physical_virtualenvs = true
+model_caches = true
+bulk_remote_outputs = true
+third_party_paper_pdfs = true
+
+[notes]
+fk_steering_submodule = "not embedded on main; preserved as gitlink on paper/fk-steering and not needed by executed text-to-image scope"
+
+[[paper]]
+id = "null-tta"
+branch = "paper/null-tta"
+commit = "337bf73037e9f24e9f844974d3287384abb610bf"
+tree = "8cbbdfaeb4c2da67ec3abbd6355925c66c18f8ca"
+scope = "SD-v1.5, nmax=55, 3 seeds x 50 prompts, PickScore/HPSv2/Aesthetic/ImageReward"
+verdict = "PASS"
+
+[[paper]]
+id = "das"
+branch = "paper/das"
+commit = "2f4b2239f29ee59f80359bdfa5ed747b6d855a1e"
+tree = "7ed8287306b0f43dd4147168998918a981bc8559"
+scope = "official Figure 1 GMM, matched Python/Torch/Numba seeds 42,43,44"
+verdict = "PASS_WITH_VARIANCE"
+
+[[paper]]
+id = "fk-steering"
+branch = "paper/fk-steering"
+commit = "9413005dee1e79f80fb4561a4a7ac8eec704281b"
+tree = "74fd88d14dd0a3cb38a0217ef536a5e2ba20f462"
+scope = "one text-to-image prompt, 3 seeds, k=4"
+verdict = "PARTIAL"
+
+[[paper]]
+id = "fk-correctors"
+branch = "paper/fk-correctors"
+commit = "aa6f5ed4a0ebb91329d4cd5823cc7e77c5e196e6"
+tree = "87010138cd568d9234543c50c4d9af3b73b89a47"
+scope = "exact Table A1, 10k samples, 1000 steps, 5 sequential runs, 6 methods"
+verdict = "PASS_WITH_VARIANCE"

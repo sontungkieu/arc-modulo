@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "paper": "Test-time Alignment of Diffusion Models without Reward Over-optimization",
+  "upstream_commit": "2f4b2239f29ee59f80359bdfa5ed747b6d855a1e",
+  "run_id": "das-gmm-20260811-1054-r3",
+  "modal_profile": "kieusontung8",
+  "accelerator": "L4",
+  "notebook_status": "COMPLETED",
+  "modal_wrapper_status": "FAILED_AFTER_RESULT",
+  "modal_wrapper_error": "ModuleNotFoundError: No module named 'torch' in the base-interpreter provenance probe; the uv-environment notebook had already completed and committed its artifacts.",
+  "notebook_elapsed_s": 633.147576,
+  "figure": "../remote_artifacts/das-gmm-20260811-1054-r3/output/das-gmm-20260811-1054-r3/gaussian_mixture_1.png",
+  "mean_reward_from_figure_title": {
+    "pretrained": -10.43,
+    "target": -0.29,
+    "rl_ddpo": -0.06,
+    "direct_backpropagation": -1.42,
+    "approximate_guidance": -163.97,
+    "smc": -0.21
+  },
+  "qualification": "Official Figure 1 GMM notebook, one seeded execution. Values are the two-decimal titles rendered by the official notebook."
+}

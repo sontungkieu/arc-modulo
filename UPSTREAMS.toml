@@ -1,0 +1,33 @@
+schema_version = 1
+
+[[repository]]
+id = "null-tta"
+paper = "Test-Time Alignment of Text-to-Image Diffusion Models via Null-Text Embedding Optimisation"
+paper_url = "https://openaccess.thecvf.com/content/CVPR2026/html/Kim_Test-Time_Alignment_of_Text-to-Image_Diffusion_Models_via_Null-Text_Embedding_Optimisation_CVPR_2026_paper.html"
+url = "https://github.com/kthone/null-tta.git"
+path = "upstream/null-tta"
+commit = "337bf73037e9f24e9f844974d3287384abb610bf"
+
+[[repository]]
+id = "das"
+paper = "Test-time Alignment of Diffusion Models without Reward Over-optimization"
+paper_url = "https://arxiv.org/abs/2501.05803"
+url = "https://github.com/krafton-ai/DAS.git"
+path = "upstream/das"
+commit = "2f4b2239f29ee59f80359bdfa5ed747b6d855a1e"
+
+[[repository]]
+id = "fk-steering"
+paper = "A General Framework for Inference-Time Scaling and Steering of Diffusion Models"
+paper_url = "https://proceedings.mlr.press/v267/singhal25b.html"
+url = "https://github.com/zacharyhorvitz/Fk-Diffusion-Steering.git"
+path = "upstream/fk-steering"
+commit = "9413005dee1e79f80fb4561a4a7ac8eec704281b"
+
+[[repository]]
+id = "fk-correctors"
+paper = "Feynman-Kac Correctors in Diffusion: Annealing, Guidance, and Product of Experts"
+paper_url = "https://proceedings.mlr.press/v267/skreta25a.html"
+url = "https://github.com/martaskrt/fkc-diffusion.git"
+path = "upstream/fk-correctors"
+commit = "aa6f5ed4a0ebb91329d4cd5823cc7e77c5e196e6"

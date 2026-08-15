@@ -1,0 +1,5 @@
+prompt_idx,prompt,baseline_pick,optimized_pick,baseline_aes,optimized_aes,baseline_hps,optimized_hps,baseline_ir,optimized_ir
+0,A bus stopped on the side of the road while people board it.,0.21310581266880035,0.3129037022590637,nan,nan,nan,nan,nan,nan
+1,A bunch of people posing with some bikes.,0.2260051965713501,0.3298852741718292,nan,nan,nan,nan,nan,nan
+2,a jet engine on the wing of a plane,0.20190775394439697,0.26976239681243896,nan,nan,nan,nan,nan,nan
+3,A bunch of bicycles parked on the street with items sitting around them,0.2343357652425766,0.2975516617298126,nan,nan,nan,nan,nan,nan

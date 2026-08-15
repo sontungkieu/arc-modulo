@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "paper": "Feynman-Kac Correctors in Diffusion: Annealing, Guidance, and Product of Experts",
+  "upstream_commit": "aa6f5ed4a0ebb91329d4cd5823cc7e77c5e196e6",
+  "run_id": "fkc-gmm-20260811-1139-r8",
+  "modal_app_id": "ap-ivBYltHI0KNpGZmgAbYm4M",
+  "modal_profile": "phamvanvuhoan",
+  "accelerator": "NVIDIA L4",
+  "python": "3.10.17",
+  "torch": "2.4.0+cu121",
+  "notebook_status": "COMPLETED",
+  "notebook_elapsed_s": 77.794969,
+  "scope": {
+    "kind": "scaled Table A1 subset",
+    "num_samples": 2000,
+    "num_integration_steps": 200,
+    "num_runs": 5,
+    "methods": [
+      "target_score_no_fkc",
+      "tempered_noise_no_fkc",
+      "target_score_systematic_fkc",
+      "tempered_noise_systematic_fkc"
+    ],
+    "paper_full_configuration": {
+      "num_samples": 10000,
+      "num_integration_steps": 1000,
+      "num_runs": 5,
+      "additional_method": "birth-death clocks"
+    }
+  },
+  "metrics_mean_pm_sample_sd": {
+    "target_score_no_fkc": {
+      "reproduction": {"energy_w2": [0.917, 0.043], "mmd": [0.029, 0.001], "total_variation": [0.646, 0.008], "w1": [11.569, 0.388], "w2": [15.984, 0.467]},
+      "paper": {"energy_w2": [0.943, 0.026], "mmd": [0.020, 0.001], "total_variation": [0.487, 0.007], "w1": [11.304, 0.296], "w2": [15.671, 0.269]}
+    },
+    "tempered_noise_no_fkc": {
+      "reproduction": {"energy_w2": [1.009, 0.040], "mmd": [0.067, 0.002], "total_variation": [0.730, 0.006], "w1": [16.163, 0.311], "w2": [19.974, 0.388]},
+      "paper": {"energy_w2": [1.032, 0.012], "mmd": [0.058, 0.001], "total_variation": [0.638, 0.002], "w1": [16.051, 0.123], "w2": [19.627, 0.101]}
+    },
+    "target_score_systematic_fkc": {
+      "reproduction": {"energy_w2": [1.383, 0.370], "mmd": [0.021, 0.005], "total_variation": [0.585, 0.028], "w1": [9.985, 2.737], "w2": [16.103, 3.839]},
+      "paper": {"energy_w2": [1.098, 0.418], "mmd": [0.007, 0.005], "total_variation": [0.372, 0.020], "w1": [6.256, 3.960], "w2": [11.265, 5.629]}
+    },
+    "tempered_noise_systematic_fkc": {
+      "reproduction": {"energy_w2": [1.063, 0.478], "mmd": [0.039, 0.007], "total_variation": [0.659, 0.025], "w1": [9.835, 0.945], "w2": [14.084, 1.955]},
+      "paper": {"energy_w2": [0.926, 0.248], "mmd": [0.027, 0.011], "total_variation": [0.512, 0.017], "w1": [9.974, 1.229], "w2": [14.045, 1.308]}
+    }
+  },
+  "runtime_patch_manifest": "../remote_artifacts/fkc-gmm-20260811-1139-r8/output/fkc-gmm-20260811-1139-r8/runtime_patch.json",
+  "executed_notebook": "../remote_artifacts/fkc-gmm-20260811-1139-r8/output/fkc-gmm-20260811-1139-r8/gmm_temp_annealed_systematic_scaled.executed.ipynb",
+  "qualification": "This is a scaled reproduction, not an exact replication of the full Table A1. The direction of several key distributional metrics is reproduced, but individual cells must not be presented as exact paper matches."
+}

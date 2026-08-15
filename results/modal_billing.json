@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "billing_period": ["2026-08-01", "2026-09-01"],
+  "currency": "USD",
+  "guard": {
+    "budget_per_workspace": 30.0,
+    "warning_limit_per_workspace": 24.0,
+    "hard_limit_per_workspace": 29.0
+  },
+  "snapshots": {
+    "kieusontung8": {
+      "paper": "DAS",
+      "baseline_reported_usage": 0.0,
+      "final_reported_usage": 0.77372531,
+      "task_delta": 0.77372531,
+      "reported_at_utc": "2026-08-11T14:54:13.163994+00:00"
+    },
+    "kieusontung6": {
+      "paper": "FK Steering",
+      "baseline_reported_usage": 1.96101226,
+      "final_reported_usage": 2.89347837,
+      "task_delta": 0.93246611,
+      "reported_at_utc": "2026-08-11T14:54:07.899466+00:00"
+    },
+    "phamvanvuhoan": {
+      "paper": "FK Correctors",
+      "baseline_reported_usage": 0.0,
+      "final_reported_usage": 0.79467160,
+      "task_delta": 0.79467160,
+      "reported_at_utc": "2026-08-11T14:54:18.393878+00:00"
+    }
+  },
+  "total_task_delta": 2.50086302,
+  "qualification": "Provider-reported billing can lag. Deltas include setup and failed-attempt costs associated with this reproduction task, not only the final successful calls."
+}

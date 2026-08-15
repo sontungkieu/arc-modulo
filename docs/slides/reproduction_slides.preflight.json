@@ -1,0 +1,12 @@
+{
+  "schema": "pdf_read_preflight/1",
+  "verdict": "PASS",
+  "file": "reproduction_slides.pdf",
+  "sha256": "b887b82b72ba755199a9ac86b1d8f6478b5e691a3635403b74fb132cd070b3f4",
+  "declared_page_count": 22,
+  "enumerated_page_count": 22,
+  "reader_page_count": 22,
+  "warnings": [],
+  "generated_at": "2026-08-13T14:34:22.583069+00:00",
+  "tool": "pdf_read_preflight/1.0.0"
+}

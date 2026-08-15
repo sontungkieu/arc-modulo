@@ -1,0 +1,65 @@
+\begin{thebibliography}{6}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Horvitz et~al.(2025)Horvitz, Singhal, and
+  collaborators]{FKSteeringCode}
+Zachary Horvitz, Raghav Singhal, and collaborators.
+\newblock {FK-Diffusion-Steering}: Official code.
+\newblock GitHub repository, 2025.
+\newblock URL \url{https://github.com/zacharyhorvitz/Fk-Diffusion-Steering}.
+\newblock Reproduction pinned to commit
+  9413005dee1e79f80fb4561a4a7ac8eec704281b.
+
+\bibitem[Kim et~al.(2025)Kim, Kim, and Park]{Kim2025DAS}
+Sunwoo Kim, Minkyu Kim, and Dongmin Park.
+\newblock Test-time alignment of diffusion models without reward
+  over-optimization.
+\newblock In \emph{The Thirteenth International Conference on Learning
+  Representations}, 2025.
+\newblock \doi{10.48550/arXiv.2501.05803}.
+\newblock URL \url{https://arxiv.org/abs/2501.05803}.
+
+\bibitem[{KRAFTON AI}(2025)]{DASCode}
+{KRAFTON AI}.
+\newblock {DAS}: Official implementation for diffusion alignment as sampling.
+\newblock GitHub repository, 2025.
+\newblock URL \url{https://github.com/krafton-ai/DAS}.
+\newblock Reproduction pinned to commit
+  2f4b2239f29ee59f80359bdfa5ed747b6d855a1e.
+
+\bibitem[Singhal et~al.(2025)Singhal, Horvitz, Teehan, Ren, Yu, Mckeown, and
+  Ranganath]{Singhal2025FKSteering}
+Raghav Singhal, Zachary Horvitz, Ryan Teehan, Mengye Ren, Zhou Yu, Kathleen
+  Mckeown, and Rajesh Ranganath.
+\newblock A general framework for inference-time scaling and steering of
+  diffusion models.
+\newblock In \emph{Proceedings of the 42nd International Conference on Machine
+  Learning}, volume 267 of \emph{Proceedings of Machine Learning Research},
+  pages 55810--55827. PMLR, 2025.
+\newblock URL \url{https://proceedings.mlr.press/v267/singhal25b.html}.
+
+\bibitem[Skreta and collaborators(2025)]{FKCCode}
+Marta Skreta and collaborators.
+\newblock Feynman--kac correctors in diffusion: Official code.
+\newblock GitHub repository, 2025.
+\newblock URL \url{https://github.com/martaskrt/fkc-diffusion}.
+\newblock Reproduction pinned to commit
+  aa6f5ed4a0ebb91329d4cd5823cc7e77c5e196e6.
+
+\bibitem[Skreta et~al.(2025)Skreta, Akhound-Sadegh, Ohanesian, Bondesan,
+  Aspuru-Guzik, Doucet, Brekelmans, Tong, and Neklyudov]{Skreta2025FKC}
+Marta Skreta, Tara Akhound-Sadegh, Viktor Ohanesian, Roberto Bondesan, Alan
+  Aspuru-Guzik, Arnaud Doucet, Rob Brekelmans, Alexander Tong, and Kirill
+  Neklyudov.
+\newblock Feynman-kac correctors in diffusion: Annealing, guidance, and product
+  of experts.
+\newblock In \emph{Proceedings of the 42nd International Conference on Machine
+  Learning}, volume 267 of \emph{Proceedings of Machine Learning Research},
+  pages 55906--55949. PMLR, 2025.
+\newblock URL \url{https://proceedings.mlr.press/v267/skreta25a.html}.
+
+\end{thebibliography}

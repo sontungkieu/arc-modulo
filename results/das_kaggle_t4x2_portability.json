@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "classification": "environment-sensitive same-seed portability probe",
+  "seed": 42,
+  "paper_point": {
+    "smc_emd": 0.82,
+    "smc_reward": -0.22,
+    "target_reward": -0.29,
+    "reward_gap_abs_to_target": 0.06999999999999998
+  },
+  "modal_l4": {
+    "run_id": "das-gmm-seed42-20260811-r2",
+    "environment": {
+      "python": "3.10.17 (main, May 21 2025, 23:32:05) [GCC 12.2.0]",
+      "torch": "2.4.0+cu121",
+      "torch_cuda": "12.1",
+      "cuda_available": true,
+      "gpu": "NVIDIA L4",
+      "gpu_count": 1
+    },
+    "target_reward": -0.2916020325911497,
+    "smc_reward": -0.2487513116240837,
+    "smc_reward_gap_abs_to_target": 0.04285072096706599,
+    "smc_emd_mean": 0.5084257975314682,
+    "smc_emd_subsample_sd": 0.07881410861841022,
+    "target_mode_coverage": 3,
+    "target_mode_count": 3,
+    "mode_mass_l1_to_target": 0.22780000000000003,
+    "spurious_mass_outside_target_modes": 0.0045000000000000005
+  },
+  "kaggle_t4x2": {
+    "kernel_id": "codemaivanngu/diffusion-smc-das-seed42-t4x2-20260811",
+    "kernel_url": "https://www.kaggle.com/code/codemaivanngu/diffusion-smc-das-seed42-t4x2-20260811",
+    "environment": {
+      "cuda_available": true,
+      "gpu_count": 2,
+      "gpu_names": [
+        "Tesla T4",
+        "Tesla T4"
+      ],
+      "python": "3.10.12",
+      "torch": "2.4.0+cu121",
+      "torch_cuda": "12.1"
+    },
+    "uv_version": "uv 0.10.2",
+    "uv_sync_elapsed_s": 67.07350150500002,
+    "notebook_elapsed_s": 1186.6384,
+    "target_reward": -0.2916020325911497,
+    "smc_reward": -3.3447981715249027,
+    "smc_reward_gap_abs_to_target": 3.053196138933753,
+    "smc_emd_mean": 1.4158967503231905,
+    "smc_emd_subsample_sd": 0.0849917743395407,
+    "target_mode_coverage": 3,
+    "target_mode_count": 3,
+    "mode_mass_l1_to_target": 0.7056,
+    "spurious_mass_outside_target_modes": 0.3528,
+    "best_baseline_emd": 2.3954541892541075,
+    "allocation_gpu_count": 2,
+    "allocation_gpu_names": [
+      "Tesla T4",
+      "Tesla T4"
+    ],
+    "scientific_workload_gpu_count": 1
+  },
+  "identity_checks": {
+    "target_reward_exact_match": true,
+    "target_mode_mass_exact_match": true,
+    "official_source_sha256_exact_match": true,
+    "official_source_sha256": "d4cc4a9f1ad8e76a40ebf8a49d93f569478a922f54f784813e8410a29d8e000a",
+    "instrumented_notebook_semantic_exact_match": true,
+    "instrumented_notebook_semantic_sha256": "566145de2535c28455116b12639ff6e3f626e3e43aadb19ecb1ee3e4243bf6d2",
+    "note": "Byte hashes differ only because nbformat generated a random cell id; semantic hash excludes cell id."
+  },
+  "differences": {
+    "smc_emd_absolute": 0.9074709527917223,
+    "smc_emd_kaggle_percent_higher_than_modal": 178.48640985522687,
+    "smc_emd_symmetric_relative": 0.6409160502590209,
+    "smc_reward_absolute": 3.096046859900819,
+    "paper_emd_symmetric_relative": 0.4208617261019718
+  },
+  "verdicts": {
+    "t4x2_canary": "PASS",
+    "scientific_execution": "PASS",
+    "within_kaggle_seed_claim": "PASS",
+    "paper_numeric_match_10pct": "FAIL",
+    "cross_backend_numeric_portability_10pct": "NOT_REPRODUCIBLE"
+  },
+  "tolerance": {
+    "environment_sensitive_symmetric_relative": 0.1,
+    "source": "experiment-agent reproducibility protocol default"
+  },
+  "canary": {
+    "kernel_id": "codemaivanngu/diffusion-smc-t4x2-canary-r4-20260811",
+    "kernel_url": "https://www.kaggle.com/code/codemaivanngu/diffusion-smc-t4x2-canary-r4-20260811",
+    "summary": {
+      "locked_environment": {
+        "cuda_available": true,
+        "gpu_count": 2,
+        "gpu_names": [
+          "Tesla T4",
+          "Tesla T4"
+        ],
+        "numpy": "1.26.4",
+        "per_device_checks": [
+          {
+            "device": "cuda:0",
+            "sum": 2147450880.0
+          },
+          {
+            "device": "cuda:1",
+            "sum": 2147450880.0
+          }
+        ],
+        "python": "3.10.12",
+        "scipy": "1.13.1",
+        "torch": "2.4.0+cu121",
+        "torch_cuda": "12.1"
+      },
+      "repo_root": "/kaggle/working/repo",
+      "run_id": "standalone",
+      "schema_version": 1,
+      "status": "PASS",
+      "uv_install_performed": false,
+      "uv_lock_sha256": "e7568cd6efa088b82e9a4d0b25279abdac87470f9550dd40466653f25a935ce0",
+      "uv_sync_elapsed_s": 58.54182786300001,
+      "uv_version": "uv 0.11.13 (x86_64-unknown-linux-gnu)"
+    }
+  },
+  "source_artifacts": [
+    "outputs/kaggle_jobs/das_seed42_t4x2_20260811T155327Z/output/kaggle_job_ops/das-seed42-kaggle-t4x2-20260811/diagnostics/notebook_output/das_metrics.json",
+    "outputs/kaggle_jobs/das_seed42_t4x2_20260811T155327Z/output/kaggle_job_ops/das-seed42-kaggle-t4x2-20260811/diagnostics/das_kaggle_summary.json",
+    "outputs/kaggle_jobs/das_seed42_t4x2_20260811T155327Z/output/kaggle_job_ops/das-seed42-kaggle-t4x2-20260811/diagnostics/runtime_patch.json",
+    "outputs/kaggle_jobs/das_seed42_t4x2_20260811T155327Z/output/kaggle_job_ops/das-seed42-kaggle-t4x2-20260811/diagnostics/notebook_output/GMM.seed-42.instrumented.ipynb",
+    "outputs/kaggle_jobs/das_seed42_t4x2_20260811T155327Z/output/kaggle_job_ops/standalone/accelerator_summary.json",
+    "outputs/kaggle_jobs/t4x2_canary_r4_20260811T1530Z/output_direct/kaggle_job_ops/standalone/diagnostics/t4x2_canary_summary.json",
+    "remote_artifacts/das-gmm-seed42-20260811-r2/output/das-gmm-seed42-20260811-r2/das_metrics.json",
+    "remote_artifacts/das-gmm-seed42-20260811-r2/output/das-gmm-seed42-20260811-r2/modal_summary.json",
+    "remote_artifacts/das-gmm-seed42-20260811-r2/output/das-gmm-seed42-20260811-r2/runtime_patch.json",
+    "remote_artifacts/das-gmm-seed42-20260811-r2/output/das-gmm-seed42-20260811-r2/GMM.seed-42.instrumented.ipynb"
+  ],
+  "qualification": "This same-seed comparison is not an additional independent seed and is excluded from the five-seed Modal aggregate. The T4x2 allocation was verified on both GPUs, but the official DAS notebook itself uses one CUDA device."
+}

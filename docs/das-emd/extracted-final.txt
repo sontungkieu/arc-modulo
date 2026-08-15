@@ -1,0 +1,378 @@
+DAS toy GMM
+EMD / Wasserstein-1 và ý nghĩa
+chính xác của X, Y, uX, uY, π
+Ghi chú này giải thích EMD trong Figure 1 toy GMM của DAS. Ở đây các sample là
+điểm hai chiều; chúng chưa phải ảnh.
+
+Trả lời ngắn gọn
+X là các terminal sample x0 do DAS/SMC sinh sau toàn bộ reverse process; Y là reference
+sample từ target reward-tilted distribution, không phải ảnh thật; uX, uY là các vector trọng số
+xác suất của empirical samples; π là kế hoạch vận chuyển mass tối ưu giữa hai tập.
+
+Nhiễu ban đầu
+xT ~ N(0, I)
+
+Reverse diffusion + SMC
+
+→
+
+weight, ESS, resample qua từng
+bước
+
+→
+
+Terminal samples
+x0 trong data space 2D
+
+Câu hỏi mà EMD trả lời: Cần vận chuyển trung bình bao xa để biến empirical distribution
+do DAS sinh ra thành empirical target distribution?
+
+1. X là nhiễu hay output cuối?
+X là output cuối của quá trình reverse diffusion/SMC, không phải Gaussian noise ban đầu
+xT.
+
+X = {x (1), …, x (N)}.
+0
+
+0
+
+x ~ N(0, I) → x
+T
+
+T-1
+
+→…→x →x .
+1
+
+0
+
+•
+
+xT: nhiễu ban đầu.
+
+•
+
+xt: particle vẫn còn nhiễu ở bước trung gian.
+
+•
+
+x0: sample hoàn chỉnh trong data space.
+
+•
+
+Trong toy GMM, mỗi x0 = (x1, x2) chỉ là một điểm 2D.
+
+•
+
+Trong text-to-image diffusion, x0 tương ứng ảnh hoặc latent ảnh đã denoise.
+Ở mỗi reverse step, DAS duy trì nhiều particles và thực hiện:
+
+1
+
+Dùng pretrained diffusion transition làm proposal.
+
+2
+
+Ước lượng clean sample x̂0(xt).
+
+3
+
+Đánh giá reward trên clean estimate.
+
+Ghi chú kỹ thuật • 13/08/2026
+
+Trang 1
+
+DAS toy GMM • EMD / Wasserstein-1
+
+4
+
+Cập nhật importance weights.
+
+5
+
+Resample nếu effective sample size (ESS) quá thấp.
+
+6
+
+Tiếp tục denoise.
+
+Step nào được dùng để tính EMD?
+EMD trong Figure 1 không được tính trên noisy particles trung gian. Nó dùng smc_samples,
+tức các terminal samples sau khi hoàn tất toàn bộ reverse process. Reproduction có khoảng
+1.000 terminal samples, sau đó notebook rút 500 điểm để tính paper-style EMD.
+
+2. Y có phải ảnh thật không?
+Không. Trong toy GMM, Y là các reference samples từ target reward-tilted distribution:
+
+Y = {y1, …, yM},
+ptar(x) = (1/Z) ppre(x) exp(r(x)/α).
+•
+
+ppre: phân phối GMM mà diffusion model ban đầu đã học.
+
+•
+
+r(x): reward.
+
+•
+
+α: KL/reward temperature.
+
+•
+
+Z: normalization constant.
+Notebook tạo target_samples theo bốn bước:
+
+1
+
+Tạo một lưới dày trong không gian 2D.
+
+2
+
+Tính ppre(x) exp(r(x)/α) tại từng điểm lưới.
+
+3
+
+Chuẩn hóa các giá trị thành xác suất.
+
+4
+
+Sample 10.000 điểm từ phân phối lưới đã chuẩn hóa.
+
+Vai trò của hai tập
+X: những gì DAS/SMC thực sự sinh ra. Y: những gì DAS được kỳ vọng phải sinh ra.
+khoảng cách distributional giữa hai tập này.
+
+EMD đo
+
+Trong text-to-image thì sao?
+p
+
+(x | c) ∝ p
+
+tar
+
+pre
+
+(x | c) exp(r(x,c)/α).
+
+Trong text-to-image, ta thường không thể lấy mẫu chính xác từ target trên để tạo một tập
+Y. Vì vậy không đơn giản lấy ảnh thật làm Y rồi tính EMD trong pixel space. Các thí nghiệm
+thường dùng PickScore, HPS v2, ImageReward, Aesthetic, diversity metrics và human
+evaluation. EMD X-vs-Y ở đây đặc biệt phù hợp với toy GMM vì target distribution có thể
+được dựng gần như trực tiếp.
+
+Ghi chú kỹ thuật • 13/08/2026
+
+Trang 2
+
+DAS toy GMM • EMD / Wasserstein-1
+
+3. u_X và u_Y là gì?
+Từ hai tập samples, ta tạo hai empirical distributions:
+
+P̂X = Σi=1N uX,i δxᵢ,
+P̂Y = Σj=1M uY,j δyⱼ.
+•
+
+δxᵢ: một point mass đặt tại sample xi.
+
+•
+
+uX,i: lượng probability mass mà sample xi đại diện.
+
+•
+
+uY,j: lượng probability mass mà sample yj đại diện.
+Nếu mọi sample có trọng số như nhau:
+
+uX,i = 1/N,
+uX = (1/N, …, 1/N),
+
+uY,j = 1/M,
+uY = (1/M, …, 1/M).
+
+“Uniform mass” không có nghĩa là samples phân bố đều trong không gian
+Nó chỉ có nghĩa là mỗi điểm quan sát mang cùng một trọng số xác suất. Nếu X có bốn điểm
+thì uX = (0.25, 0.25, 0.25, 0.25). Nếu ba điểm cùng nằm gần một mode, mode đó tự động
+mang khoảng 0.75 empirical mass. Vì thế uniform sample weights vẫn phản ánh đúng tần
+suất mode.
+
+4. π là gì?
+π là transport plan, một ma trận không âm kích thước N × M. Phần tử πij cho biết chuyển
+bao nhiêu mass từ source sample xi sang target sample yj.
+
+π ∈ R N×M.
++
+
+Transport plan phải thỏa hai điều kiện biên:
+
+Σ π =u
+j
+
+ij
+
+X,i
+
+(toàn bộ mass tại x được chuyển đi),
+
+Σ π =u
+
+i
+
+i
+
+ij
+
+Y,j
+
+(y nhận đúng target mass).
+j
+
+Tập tất cả transport plan hợp lệ được ký hiệu Π(uX, uY). EMD chọn plan có tổng chi phí nhỏ
+nhất:
+
+Ŵ (X,Y) = min
+1
+
+Ghi chú kỹ thuật • 13/08/2026
+
+π ∈ Π(uX,uY)
+
+Σ
+
+i,j
+
+π ||x - y || .
+ij
+
+i
+
+j 2
+
+Trang 3
+
+DAS toy GMM • EMD / Wasserstein-1
+
+cij = ||xi - yj||2.
+Chi phí cij là khoảng cách Euclidean để chuyển một đơn vị mass từ xi tới yj. Vì vậy EMD vừa
+nhạy với vị trí các mode, vừa nhạy với tỷ lệ mass giữa chúng.
+
+5. Ví dụ trực giác
+Giả sử target Y có hai mode: 50% bên trái và 50% bên phải.
+Tình huống
+
+Phân bổ X
+
+Hệ quả EMD
+
+DAS đúng
+
+50% trái, 50% phải
+
+Chỉ cần chuyển mass quãng ngắn → thấp
+
+Mode collapse
+
+95% trái, 5% phải
+
+Khoảng 45% mass phải đi xa → cao
+
+Mode lệch vị trí
+
+Tỷ lệ 50/50 nhưng tâm
+cụm sai
+
+Hầu hết mass vẫn phải dịch chuyển → cao
+
+Mode coverage có thể vẫn báo 2/2 trong trường hợp 95%/5%, vì cả hai mode đều có
+sample. EMD phát hiện vấn đề vì optimal transport buộc phải chuyển một lượng mass lớn
+qua khoảng cách xa.
+
+EMD đo đồng thời
+Vị trí mode • tỷ lệ mass giữa các mode • spurious samples • khoảng cách mà lượng mass sai
+phải di chuyển.
+
+6. Tại sao không giữ importance weights cuối của
+SMC?
+Trong generic importance sampling, ta có thể giữ một empirical measure có trọng số:
+
+P̂ = Σ w δ .
+X
+
+i
+
+i
+
+xᵢ
+
+Nhưng DAS thực hiện resampling để biến particle population thành một tập gần target. Sau
+terminal resampling, paper đánh giá chính tập generated samples như các samples thông
+thường và đặt trọng số bằng nhau:
+
+u
+
+X,i
+
+Ghi chú kỹ thuật • 13/08/2026
+
+= 1/N.
+
+Trang 4
+
+DAS toy GMM • EMD / Wasserstein-1
+
+Câu hỏi đánh giá phù hợp với generation
+Nếu tôi lấy ngẫu nhiên một output trong tập DAS đã sinh, distribution của output đó có gần
+target không?
+Khác với câu hỏi: Nếu giữ thêm một bộ importance weights bên ngoài, liệu tôi có thể sửa lại
+distribution của tập output không?
+
+7. Tóm tắt chính xác cho Figure 1 DAS
+Nhiễu ban đầu
+xT ~ N(0, I)
+
+Reverse diffusion + SMC
+
+→
+
+weight, ESS, resample qua từng
+bước
+
+→
+
+Terminal samples
+x0 trong data space 2D
+
+Sau khi reverse process hoàn tất:
+(i)
+
+500
+
+X = {x0 }i=1
+500
+
+Y = {yj}j=1
+
+uX = (1/500, …, 1/500),
+
+,
+
+yj ~ ptar,
+
+uY = (1/500, …, 1/500).
+
+Kết luận
+EMD càng thấp thì terminal distribution của DAS càng gần target reward-tilted distribution.
+Nó không so nhiễu trung gian với ảnh thật; nó so output cuối của SMC với reference samples
+từ target distribution.
+
+Nguồn nội dung: phần giải thích đã chọn trong task nghiên cứu DAS/SMC. Tài liệu này chỉ chuyển thể và dàn
+trang; không thêm kết quả thực nghiệm mới.
+
+Ghi chú kỹ thuật • 13/08/2026
+
+Trang 5
+
+

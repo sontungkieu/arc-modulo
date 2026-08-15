@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "kernel_id": "codemaivanngu/diffusion-smc-das-seed42-numba-rescue-t4x2-r6",
+  "kernel_url": "https://www.kaggle.com/code/codemaivanngu/diffusion-smc-das-seed42-numba-rescue-t4x2-r6",
+  "seed": 42,
+  "numba_seed": 42,
+  "allocation": {
+    "gpu_count": 2,
+    "gpu_names": [
+      "Tesla T4",
+      "Tesla T4"
+    ]
+  },
+  "scientific_workload_gpu_count": 1,
+  "paper": {
+    "paper_style_smc_emd": 0.82,
+    "smc_reward": -0.22,
+    "target_reward": -0.29
+  },
+  "modal_l4": {
+    "paper_style_smc_emd": 0.7434202483133789,
+    "stable_smc_emd_mean": 0.546165879706091,
+    "stable_smc_emd_std": 0.10462843532768464,
+    "target_reward": -0.2916020325911497,
+    "smc_reward": -0.23475466337145662,
+    "target_mode_coverage": 3,
+    "mode_mass_l1_to_target": 0.22379999999999997
+  },
+  "kaggle_t4x2": {
+    "paper_style_smc_emd": 1.4958616236716635,
+    "stable_smc_emd_mean": 1.4728719072339413,
+    "stable_smc_emd_std": 0.09616908028081889,
+    "target_reward": -0.2916020325911497,
+    "smc_reward": -3.229684821209273,
+    "target_mode_coverage": 3,
+    "target_mode_count": 3
+  },
+  "numeric": {
+    "kaggle_to_paper_symmetric_relative": 0.5836804900286956,
+    "kaggle_to_modal_symmetric_relative": 0.6720381071912778,
+    "paper_match_10pct": false,
+    "modal_match_10pct": false
+  },
+  "source_files": [
+    "outputs/kaggle_jobs/das_rescue_seed42_t4x2_r6_20260811T201300Z/output/kaggle_job_ops/das-seed42-numba42-rescue-t4x2-r6-20260811T201300Z/diagnostics/notebook_output/das_metrics.json",
+    "outputs/kaggle_jobs/das_rescue_seed42_t4x2_r6_20260811T201300Z/output/kaggle_job_ops/das-seed42-numba42-rescue-t4x2-r6-20260811T201300Z/diagnostics/das_kaggle_summary.json",
+    "outputs/kaggle_jobs/das_rescue_seed42_t4x2_r6_20260811T201300Z/output/kaggle_job_ops/standalone/accelerator_summary.json"
+  ]
+}

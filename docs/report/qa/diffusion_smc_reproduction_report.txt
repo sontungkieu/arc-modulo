@@ -1,0 +1,613 @@
+              Báo cáo tái lập thực nghiệm có kiểm toán
+                    Null-TTA, DAS, FK Steering và Feynman–Kac Correctors
+
+
+        Báo cáo kỹ thuật từ artifact remote, multi-seed và provenance khóa phiên bản
+
+                                          12 tháng 8 năm 2026
+
+                                            Tóm tắt nội dung
+          Báo cáo này tái lập hai thí nghiệm test-time alignment còn thiếu: Table 1 SD-v1.5 của Null-TTA
+      (CVPR 2026) và Figure 1 GMM của DAS; đồng thời giữ lại kết quả đã có của FK Steering và
+      Feynman–Kac Correctors để tạo một hồ sơ thống nhất. Null-TTA được đánh giá trên đủ 50 prompt
+      chính thức, ba seed và bốn scorer thật. DAS được chạy lại sau khi phát hiện RNG của Numba
+      độc lập với NumPy: seed Python/Torch và Numba được khóa trùng nhau, EMD được báo theo cả
+      estimator một lần giống notebook paper và 100 lần lặp để đo độ bất ổn. Một bản DAS seed 42
+      cũng được triển khai trên Kaggle T4x2. Mọi thí nghiệm khoa học chạy remote trong môi trường uv
+      –frozen; máy local chỉ điều phối, tổng hợp, vẽ hình và biên dịch tài liệu. Báo cáo tách rõ ba câu
+      hỏi: code có chạy không, point estimate có tái lập không, và kết quả có ổn định qua seed không.
+
+Từ khóa: test-time alignment, diffusion, Null-TTA, Sequential Monte Carlo, Feynman–Kac, repro-
+ducibility.
+
+
+1     Kết luận điều hành
+
+
+Bảng 1: Verdict chỉ áp dụng cho phạm vi đã chạy, không được ngoại suy thành benchmark-wide
+superiority.
+Công trình        Phạm vi                  Kết luận có thể bảo vệ                             Verdict
+Null-TTA          Table 1 SD-v1.5, 50 Primary PickScore đạt 0.316 (paper 0.315),              PASS
+                  prompt, seed 42–44, bootstrap CI [0.308, 0.324], sai khác đối xứng
+                  target PickScore      0.2%.
+DAS               Figure 1 GMM, of- Seed mặc định 42 đạt EMD 0.743 so với paper               PASS WITH
+                  ficial SMC, matched 0.82; ba seed vẫn có variance rất lớn.                  VARIANCE
+                  Numba RNG
+DAS Kaggle        Seed 42, allocation Hạ tầng và payload khoa học hoàn chỉnh;                 xem Sec. 5
+                  T4x2, workload chính numeric portability được chấm riêng với paper
+                  thức dùng một GPU     và Modal.
+FK Steering       Một prompt, ba seed, Pipeline chạy được nhưng variance lớn và không         PARTIAL
+                  k = 4, ImageReward    đại diện GenEval.
+FK Correctors     Table A1 scaled: 2k Một số xu hướng gần paper; chưa phải exact              PARTIAL
+                  samples, 200 steps, 5 10k/1000 reproduction.
+                  runs
+
+
+Hai ranh giới quyết định:
+1. Không đổi tên reproduction thành improvement. Null-TTA được chấm bằng độ gần point
+   estimate Table 1 và cải thiện paired so với baseline cùng seed. DAS được chấm bằng EMD/mode
+   fidelity trước reward; reward −0.21 không tự động tốt hơn −0.22 nếu target là −0.29.
+
+                                                      1
+2. Không dùng CI rộng để “cứu” một point estimate. Với DAS, khoảng t từ ba seed quá rộng
+   và thậm chí có cận âm dù EMD không âm. Báo cáo dùng seed 42—seed mặc định công khai của
+   notebook—cho exact-point reproduction, rồi báo ba seed như sensitivity analysis độc lập.
+
+
+2     Hợp đồng đánh giá và nguồn bằng chứng
+
+2.1   Null-TTA
+
+Null-TTA tối ưu embedding null-text ∅t ở inference time trong khi giữ nguyên trọng số diffusion. Với
+reward mục tiêu R, regularizer embedding và prior-preservation, dạng loss thực thi có thể tóm tắt là
+                                                              (0)
+                            Lt = −λα R(xt , c) + λreg ∥∅t − ∅t ∥22 + Lprior .                      (1)
+
+Paper báo Table 1 SD-v1.5 trung bình qua ba random seed nhưng không công bố ID seed. Protocol
+này dùng {42, 43, 44} vì 42 là default trong code; đây là giả định minh bạch, không phải fact từ paper.
+Primary estimand là optimized PickScore tại nmax = 55 so với point 0.315. PASS yêu cầu đồng thời
+symmetric relative difference
+                                                         |a − b|
+                                        dsym (a, b) =                                               (2)
+                                                      (|a| + |b|)/2
+không quá 10%, và CI 95% bootstrap phân cấp của paired improvement so với chính baseline phải
+hoàn toàn dương. HPS v2, Aesthetic và ImageReward là secondary numeric checks, không được dùng
+để thay primary sau khi xem kết quả.
+
+
+2.2   DAS
+
+DAS định nghĩa phân phối alignment
+
+                                    ptar (x) ∝ ppre (x) exp(r(x)/α),                               (3)
+
+tương đương tối ưu reward có KL regularization. Do đó raw reward càng cao không đồng nghĩa lấy
+mẫu đúng ptar : over-optimization có thể làm mất mode. Primary paper point ở Figure 1 là EMD
+0.82 (lower is better), reward DAS −0.22 và target reward −0.29. Exact-point criterion của protocol
+là EMD seed 42 trong 10% theo dsym , đồng thời mọi seed sensitivity phải cover 3/3 target modes.
+Mean/SD ba seed được báo đầy đủ nhưng không dùng CI rộng để tạo PASS.
+
+
+
+
+                                                   2
+2.3     Identity và môi trường
+
+
+Bảng 2: Nguồn chính thức và commit khóa. Upstream clone được giữ sạch; runtime wrapper chỉ thêm
+seed/provenance/metric persistence.
+Paper              Code chính thức                                             Commit
+Null-TTA [4]       https://github.com/kthone/null-tta [3]                      337bf73037e9f24e9f8449
+                                                                               74d3287384abb610bf
+DAS [2]            https://github.com/krafton-ai/DAS [5]                       2f4b2239f29ee59f80359b
+                                                                               dfa5ed747b6d855a1e
+FK Steering [6]    https:                                                      9413005dee1e79f80fb456
+                   //github.com/zacharyhorvitz/Fk-Diffusion-Steering           1a4a7ac8eec704281b
+                   [1]
+FK Correctors      https://github.com/martaskrt/fkc-diffusion [7]              aa6f5ed4a0ebb91329d4cd
+[8]                                                                            5823cc7e77c5e196e6
+
+
+Các remote đều dựng môi trường bằng uv sync –frozen –no-install-project. Null-TTA dùng
+Python 3.10, Torch 2.3.1, Diffusers 0.32.2 và scorer official. Seed 42–43 chạy L40S với hyperparameter
+paper. Seed 44 dùng memory-reduced path: generation chỉ giữ PickScore resident, sau đó load tuần
+tự Aesthetic/HPS/ImageReward và chấm lại đúng cặp PNG mà code official đã lưu. Bảy artifact
+hoàn chỉnh chạy L4 24GB. App L4 [7,14) bị dừng vì billing guard nhưng đã commit đủ CSV và tám
+PNG lossless cho bốn prompt [7,11); prefix này được kiểm hash, chuyển sang workspace còn sống và
+post-score trên L40S. Ba prompt [11,14) được sinh và chấm mới trên L40S. Không có dữ liệu nào
+từ provider-disabled retry được đưa vào thống kê. Cách cứu này bảo toàn ảnh đã sinh nhưng tạo
+hardware/scoring-path confound được giữ trong threats to validity. DAS dùng Python 3.10, Torch 2.4.0
+và commit chính thức trên Modal L4; Kaggle dùng cùng lockfile trên allocation hai Tesla T4.
+
+
+3     Null-TTA: Table 1 SD-v1.5
+
+3.1     Thiết kế
+
+Chúng tôi chạy đủ prompt list 50 mục trong example chính thức, seed {42, 43, 44}, target PickScore,
+nmin = 5, nmax = 55, K = 3 particles, 100 diffusion steps, Adam learning rate 0.01, λα = 100,
+λreg = 0.002, ϕ = 0.01 và tampering coefficient 0.008. Aggregator từ chối build nếu thiếu bất kỳ cặp
+seed–prompt nào, có scorer mock/disabled, config drift hoặc commit drift. CI 95% của optimized
+metric dùng bootstrap phân cấp: resample seed rồi resample prompt index, 10,000 repeat.
+
+
+3.2     Kết quả chính
+
+
+Bảng 3: Paper versus reproduction. Cột reproduction optimized trình bày mean ba seed và hierarchical-
+bootstrap CI 95%.
+          Metric        Paper base   Repro base   Paper Null      Repro Null [CI]     dsym   Match
+          PickScore          0.218        0.218        0.315   0.316 [0.308, 0.324]   0.2%   PASS
+          HPS v2             0.279        0.279        0.294   0.294 [0.289, 0.299]   0.1%   PASS
+          Aesthetic          5.232        5.230        5.431   5.471 [5.335, 5.603]   0.7%   PASS
+          ImageReward        0.339        0.337        0.946   0.893 [0.665, 1.111]   5.8%   PASS
+
+
+
+
+                                                   3
+                 Bảng 4: Mean theo seed trên 50 prompt; không chọn riêng best seed.
+              Seed       Pick base       Pick Null       HPS Null             Aesthetic Null     ImageReward Null
+                 42          0.219          0.314           0.294                     5.531                     0.862
+                 43          0.217          0.317           0.294                     5.469                     0.970
+                 44          0.219          0.316           0.294                     5.412                     0.846
+
+
+
+
+                             Null-TTA Table 1: paper points and complete 3-seed reproduction
+                             PickScore                                                              HPS v2
+          Paper                                                        0.30
+  0.30    Reproduction
+                                                                       0.25
+  0.25
+                                                                       0.20
+  0.20
+                                                                       0.15
+  0.15
+  0.10                                                                 0.10
+
+  0.05                                                                 0.05
+                                                  sym. diff=0.2%                                                        sym. diff=0.1%
+  0.00                                                                 0.00
+              Baseline                        Null-TTA                                Baseline                     Null-TTA
+                             Aesthetic                                                            ImageReward
+
+    5                                                                   1.0
+
+    4                                                                   0.8
+
+    3                                                                   0.6
+
+    2                                                                   0.4
+
+    1                                                                   0.2
+                                                  sym. diff=0.7%                                                        sym. diff=5.8%
+    0                                                                   0.0
+              Baseline                        Null-TTA                                Baseline                     Null-TTA
+
+
+Hình 1: Bốn metric Table 1. Bar là paper/reproduction; marker trắng là từng seed; error bar của
+optimized reproduction là bootstrap CI 95%. Mỗi panel dùng scale riêng, tránh chuẩn hóa che sai
+khác tuyệt đối.
+
+
+
+
+                                                                   4
+                                                Null-TTA seed sensitivity on the primary metric
+                     0.32
+
+
+                     0.30
+
+
+                     0.28
+         PickScore
+
+
+
+                                                                                            seed 42            3-seed mean
+                                                                                            seed 43            paper baseline
+                     0.26                                                                   seed 44            paper Null-TTA
+
+
+                     0.24
+
+
+                     0.22
+
+                                 Baseline                                                          Optimized
+
+
+Hình 2: Primary PickScore theo seed. Mỗi đường nối baseline và optimized trên cùng seed; đường
+ngang là point estimate paper.
+
+
+Primary verdict machine-readable là PASS: PickScore reproduction 0.316±0.001 giữa seed, sai khác
+0.2% so với 0.315. Paired improvement là 0.097, bootstrap CI 95% [0.089, 0.106]. Verdict này chỉ nói
+numeric reproduction của cấu hình Table 1; nó không chứng minh phương pháp mới tốt hơn Null-TTA
+hoặc vượt một prior work khác.
+
+
+4     DAS: matched-RNG rescue và variance
+
+4.1   Vì sao kết quả cũ lệch
+
+Notebook chính thức seed Python, NumPy và Torch bằng 42, nhưng resampling kernel dùng
+Numba @njit; RNG của Numba có state riêng và không được seed bởi np.random.seed ở Python.
+Các run cũ vì vậy nhìn có vẻ “cùng seed” nhưng thực tế SMC resampling thay đổi không kiểm
+soát. Rescue thêm một hàm Numba-jitted gọi np.random.seed(seed) trước SMC, đồng thời đặt
+CUBLAS_WORKSPACE_CONFIG=:4096:8, tắt TF32 và bật deterministic algorithms trước khi CUDA khởi
+tạo.
+
+
+4.2   Kết quả
+
+
+Bảng 5: DAS theo matched Python/Torch/Numba seed. Paper-style EMD dùng đúng một subsample
+500-vs-500; stable EMD là mean ± SD của 100 repeat.
+                      Seed       Paper-style EMD     Stable EMD        SMC reward        Modes        Diff. tới 0.82
+                            42              0.743   0.546 ± 0.105              -0.235        3/3                  9.8%
+                            43              1.826   1.677 ± 0.174              -0.268        3/3                 76.0%
+                            44              0.505   0.441 ± 0.086              -0.238        3/3                 47.5%
+
+
+
+
+Seed mặc định 42 đạt EMD 0.743, cách paper 0.82 đúng 9.8% theo metric đối xứng: numeric
+reproduction PASS. Tuy nhiên, mean ba seed là 1.025±0.704; mean này không đạt tolerance 10%.
+
+
+                                                                   5
+Seed 43 là bad seed rõ rệt với EMD 1.826. Vì vậy verdict đầy đủ là PASS_WITH_VARIANCE:
+paper point được tái lập ở canonical seed nhưng claim không ổn định qua seed.
+
+                                            Distributional fidelity and bad seed                                                      Reward is a guardrail, not the sole target
+                                                                                                                       0.00
+                                       paper-style 1x EMD                                                                                                   paper target         own target
+                        1.8            paper 0.82                                                                                                           paper DAS            DAS/SMC
+                                       100-repeat mean ± SD                                                            0.05
+                        1.6
+
+                        1.4                                                                                            0.10
+EMD (lower is better)
+
+
+
+
+                                                                                                     mean reward
+                        1.2
+                                                                                                                       0.15
+                        1.0
+                                                                                                                       0.20
+                        0.8
+
+                        0.6                                                                                            0.25
+
+                        0.4
+                                                                                                                       0.30
+                                  42                               43                       44                                        42                   43                    44
+                                                matched Python/Torch/Numba seed                                                                           seed
+
+Hình 3: EMD/reward theo seed. Panel trái tách stochastic point estimator của paper khỏi mean 100
+repeat; panel phải nhắc rằng reward phải đọc cùng target distribution.
+
+
+                                                                                DAS target samples versus SMC outputs
+                                           seed 42; EMD=0.743                               seed 43; EMD=1.826                                            seed 44; EMD=0.505
+                         4         target
+                         3         DAS/SMC
+
+                         2
+                         1
+y
+
+
+
+
+                         0
+                         1
+                         2
+                         3
+                              6        4    2      0       2   4        6   8       6   4        2      0               2     4   6        8    6     4     2    0       2   4        6   8
+                                                       x                                                           x                                                 x
+
+
+Hình 4: Target và SMC outputs đã lưu. Seed 43 vẫn cover ba mode theo threshold 1% nhưng phân bổ
+mass sai nhiều, phù hợp EMD lớn.
+
+
+5                             DAS trên Kaggle T4x2
+
+Kernel chính thức là https://www.kaggle.com/code/codemaivanngu/diffusion-smc-das-seed4
+2-numba-rescue-t4x2-r6. Accelerator probe xác nhận hai Tesla T4 visible; notebook DAS upstream
+vẫn chọn một device nên đây là portability run trên shape T4x2, không phải data-parallel speedup.
+Source package được embed thành archive deterministic có hash và bung vào /kaggle/working/repo;
+lockfile, upstream notebook và runtime patch giống Modal.
+
+
+
+
+                                                                                                       6
+          Bảng 6: Seed 42 trên paper, Modal và Kaggle. EMD là estimator một lần giống paper.
+                                       Metric                                 Paper            Modal L4         Kaggle T4x2
+                                       Paper-style EMD                         0.820                 0.743                 1.496
+                                       SMC reward                             -0.220                -0.235                -3.230
+                                       Target-mode coverage                        –                   3/3                   3/3
+
+
+
+                               Matched seed 42 numeric portability                                                    Reward comparison
+                                                                                              0.0
+                        1.4
+                                                                                              0.5
+                        1.2
+                                                                                              1.0
+                        1.0
+      paper-style EMD
+
+
+
+
+                                                                                 SMC reward
+                                                                                              1.5
+                        0.8
+
+                        0.6                                                                   2.0
+
+                        0.4                                                                   2.5
+
+                        0.2                                                                   3.0
+                                                                                                       paper target
+                        0.0
+                              Paper          Modal L4       Kaggle T
+                                                                     4   x2                             Paper              Modal L4       Kaggle T
+                                                                                                                                                   4   x2
+
+
+
+Hình 5: Matched seed 42 trên hai backend. Cùng source/seed không đảm bảo bitwise equivalence giữa
+GPU architecture.
+
+Verdict được tách:
+  Infrastructure/execution: PASS. Hai T4 được xác nhận và payload seed 42/Numba 42 hoàn
+   chỉnh.
+  Paper numeric match: FAIL. EMD 1.496, sai khác 58.4% so với 0.82.
+  Cross-backend portability: FAIL. Sai khác đối xứng Kaggle–Modal là 67.2%.
+
+
+6     Hai paper Feynman–Kac đã chạy trước đó
+
+6.1     FK Steering
+
+Phạm vi là prompt “a photo of a brown knife and a blue donut”, seed 42–44, k = 4, 100 inference steps,
+λ = 2, ImageReward; so sánh FK-max, FK-difference và base. Repo model cũ stabilityai/stable
+-diffusion-2-1 trả 401 nên runtime dùng public mirror sd2-community/stable-diffusion-2-1;
+artifact identity drift này ngăn exact benchmark claim.
+
+
+
+
+                                                                                  7
+                                                                           FK Steering one-prompt seed variance
+                                 1.75          FK-max
+                                               FK-difference
+                                               Base k=4
+                                 1.50
+
+                                 1.25
+              mean ImageReward
+                                 1.00
+
+                                 0.75
+
+                                 0.50
+
+                                 0.25
+
+                                 0.00
+                                          42                                                            43                       44
+                                                                                                       seed
+
+
+Hình 6: One-prompt ImageReward thay đổi mạnh theo seed và thay đổi ranking. Kết quả đủ cho
+pipeline reproduction, không đủ cho GenEval superiority.
+
+
+FK-difference đạt mean 1.161 với SD 0.938; base đạt 0.660 với SD 0.541. Với một prompt và ba seed,
+verdict là PARTIAL.
+
+
+6.2   Feynman–Kac Correctors
+
+Paper Table A1 dùng 10,000 samples, 1000 integration steps và 5 runs. Reproduction hiện có dùng
+2,000 samples, 200 steps, 5 runs và bốn cấu hình no-FKC/systematic; birth–death clocks chưa chạy.
+
+                                                                      FK Correctors scaled Table A1: relative error to paper
+                                                                                                                                      200
+
+                                    target score no fkc          -3%             45%                        33%    2%      2%         150
+
+                                                                                                                                      100
+                                                                                                                                               relative error (%)
+
+                                 tempered noise no fkc           -2%             16%                        14%    1%      2%         50
+
+                                                                                                                                      0
+
+              target score systematic fkc                        26%             200%                       57%   60%      43%            50
+
+                                                                                                                                          100
+
+           tempered noise systematic fkc                         15%             44%                        29%   -1%      0%             150
+
+                                                                                                                                          200
+                                                                  2               d                      on       w1      w2
+                                                              gy_w             mm
+                                                                                                _var
+                                                                                                     iati
+                                                          ener                          tota
+                                                                                               l
+
+
+
+Hình 7: Relative error so với Table A1; màu clip ở ±200% nhưng annotation giữ giá trị thật. Mọi
+metric lower-is-better.
+
+Một số cell gần paper (tempered/systematic W2 14.084 so với 14.045), nhưng nhiều MMD/TV cells
+lệch lớn. Verdict là PARTIAL, không phải exact reproduction.
+
+
+
+
+                                                                                                   8
+7    Chi phí, portability và tính toàn vẹn
+
+Ba Modal profile đều áp monthly budget 30 USD, reserve 1 USD và hard stop 29 USD. Mỗi submission
+được chặn nếu provider-reported usage cộng local ledger estimate và reserve vượt 29 USD. Seed 42–43
+được chia thành tám shard L40S trên mỗi profile. Seed 44 ban đầu chia tám shard L4; sau snapshot
+23:00 UTC và extrapolation conservative, shard [7,14) được dừng. Bốn prompt đã commit được cứu
+bằng hash và remote post-scoring; chỉ ba prompt chưa hoàn tất mới chạy lại trên L40S. Một retry
+trên workspace thứ hai dừng do provider vô hiệu hóa workspace và không đi vào aggregate. Billing
+provider có thể trễ, nên snapshot cuối từ provider và ledger được lưu cùng report artifact thay vì suy
+ngược chi phí từ wall time.
+
+
+Bảng 7: Snapshot cuối do Modal CLI báo, USD. Canonical cost được join theo đúng 26 scientific app
+ID đứng sau 25 artifact record; cả usage và cost đều có thể chịu billing lag.
+             Profile           Final reported usage       Canonical app cost   Headroom tới 29
+             kieusontung6                    27.65                     21.41              1.35
+             kieusontung8                    25.05                     20.42              3.95
+             phamvanvuhoan                   26.92                     25.07              2.08
+
+
+Talapas không được dùng cho scientific payload vì phiên làm việc này không có ControlMaster/Duo
+hợp lệ. Báo cáo không biến việc không thể đăng nhập remote thành experimental failure.
+
+
+8    Threats to validity
+  Null-TTA seed identity: paper chỉ nói ba random seed; {42, 43, 44} là lựa chọn protocol, không
+   chứng minh trùng seed tác giả.
+  Null-TTA mixed hardware: seed 42–43 chạy L40S; seed 44 có bảy artifact L4, một prefix
+   sinh trên L4/post-score trên L40S và một artifact L40S. Tất cả seed 44 dùng scorer tuần tự.
+   Hardware-dependent floating-point drift có thể góp vào within/between-seed variance.
+  Null-TTA secondary scorers trên L4: PickScore primary của seed 44 được tính trực tiếp trong
+   official generation path. Ba secondary scorer được chạy lại từ PNG 8-bit do example chính thức
+   lưu; PNG encoding là lossless đối với mảng đã quantize, nhưng bước tensor-to-uint8 trước đó có
+   thể tạo lệch nhỏ so với chấm trực tiếp tensor. Vì vậy secondary-match phải đọc với caveat này.
+  Null-TTA scope: chỉ Table 1 SD-v1.5/PickScore-target, chưa bao phủ SDXL, other reward
+   targets hoặc mọi ablation.
+  DAS scope: chỉ toy GMM Figure 1, không phải text-to-image experiments.
+  DAS estimator: paper cho một EMD point từ subsample 500; 100-repeat estimator của report
+   đo estimator noise nhưng không phải metric paper mới.
+  DAS seed criterion: seed 42 là canonical vì code default; việc seed Numba bằng 42 là rescue hợp
+   lý nhưng upstream không công bố Numba state đã dùng để tạo figure.
+  Kaggle utilization: allocation có hai T4, scientific notebook dùng một GPU. Không có claim
+   scaling/speedup.
+  FK scope: FK Steering chỉ một prompt; FK Correctors bị scale 5 lần ở samples và steps.
+
+
+9    Kết luận
+
+Null-TTA được đánh giá bằng ma trận đầy đủ 3 seed × 50 prompt và bốn scorer, không bằng một
+canary đẹp. DAS được cứu bằng cách khóa RNG Numba bị bỏ sót: canonical seed 42 tái lập sát paper,
+
+
+                                                      9
+trong khi seed 43 chứng minh variance là failure mode thực. Kaggle r6 tách đúng infrastructure success
+khỏi numeric match. Cách báo cáo này đáp ứng yêu cầu quan trọng nhất: nếu target là 0.29 và prior
+là 0.22, một số 0.21 không được gọi là thắng chỉ vì nhìn “cao” hay “thấp” hơn; metric, hướng tối ưu,
+baseline và variance phải được định nghĩa trước.
+
+
+Data availability và lệnh tái lập
+
+Artifact machine-readable nằm trong results/*.json; raw executed notebooks, metrics, NPZ, logs và
+accelerator evidence nằm trong remote_artifacts/ và outputs/kaggle_jobs/. Figure/table trace
+lưu SHA-256 của mọi input được report dùng. Entrypoint remote là scripts/modal_null_tta.py,
+scripts/modal_runner.py và source Kaggle kaggle/das_seed42.py. Không có secret/token trong
+report package.
+
+
+AI Disclosure
+
+This report was prepared with AI assistance for source auditing, remote experiment orchestration,
+statistical aggregation, visualization, and formatting. The user specified the scope and acceptance
+constraints. Numerical claims are gated by archived machine-readable artifacts; the report owner
+remains responsible for external use.
+
+
+A     Engineering retries không được tính là scientific failures
+
+Kaggle attempts trước r6 đều terminal trước khi sinh das_metrics.json: r2 instrument notebook
+hai lần; r3/r4 không tìm được repo dataset vì backend không mount source thứ hai; r5 embed source
+thành công và xác nhận T4x2 nhưng thiếu CUBLAS_WORKSPACE_CONFIG trước khi child kernel khởi tạo.
+r6 sửa đúng biến môi trường đó và mới được phép đưa vào bảng khoa học. Giữ log các retry giúp
+audit nguyên nhân; số lượng retry không được đổi thành “hai lần model fail”.
+Các DAS Modal năm-seed cũ cũng bị loại khỏi primary analysis vì chỉ seed NumPy/Python/Torch,
+không seed RNG Numba. Chúng là forensic evidence cho root cause, không phải dữ liệu để cộng
+vào matched-RNG aggregate. Với Null-TTA, L4 canary nmax = 5 chỉ dùng đo VRAM/throughput;
+canceled L40S fragments seed 44 không được trộn với full nmax = 55 matrix. Riêng L4 shard [7,14) đã
+chạy đúng nmax = 55 và commit bốn hàng hoàn chỉnh [7,11) trước khi dừng: CSV cùng tám PNG
+được kiểm SHA-256, bốn prompt này được remote post-score và nhận; suffix chưa hoàn tất [11,14) bị
+loại và chạy mới. Retry L40S trên workspace thứ hai dừng với ConflictError: workspace ... is
+disabled; đây là provider failure, không phải model failure, và không có row nào từ retry đó đi vào
+aggregate.
+
+
+B    Checklist build
+✓ Null-TTA aggregator yêu cầu đúng 150 seed–prompt records và bốn scorer thật.
+✓ DAS aggregator yêu cầu matched seed và 3/3 mode coverage ở mọi run.
+✓ Kaggle report gate yêu cầu payload PASS, seed/Numba 42 và đúng hai GPU T4.
+✓ Mọi figure/table sinh từ JSON/NPZ; không chép tay result remote.
+✓ PDF phải qua text preflight và render kiểm tra toàn bộ trang trước khi phát hành.
+
+
+
+
+                                                 10
+Tài liệu
+[1] Zachary Horvitz, Raghav Singhal, and collaborators. FK-Diffusion-Steering: Official code. GitHub
+    repository, 2025. URL https://github.com/zacharyhorvitz/Fk-Diffusion-Steering.
+    Reproduction pinned to commit 9413005dee1e79f80fb4561a4a7ac8eec704281b.
+
+[2] Sunwoo Kim, Minkyu Kim, and Dongmin Park. Test-time alignment of diffusion models without
+    reward over-optimization. In The Thirteenth International Conference on Learning Representations,
+    2025. doi: 10.48550/arXiv.2501.05803. URL https://arxiv.org/abs/2501.05803.
+
+[3] Taehoon Kim and collaborators. Null-tta: Official implementation. GitHub repository,
+    2026. URL https://github.com/kthone/null- tta. Reproduction pinned to commit
+    337bf73037e9f24e9f844974d3287384abb610bf.
+
+[4] Taehoon Kim, Henry Gouk, and Timothy Hospedales. Test-time alignment of text-to-image diffusion
+    models via null-text embedding optimisation. In Proceedings of the IEEE/CVF Conference on
+    Computer Vision and Pattern Recognition, 2026. URL https://openaccess.thecvf.com/cont
+    ent/CVPR2026/html/Kim_Test-Time_Alignment_of_Text-to-Image_Diffusion_Models_via_
+    Null-Text_Embedding_Optimisation_CVPR_2026_paper.html.
+
+[5] KRAFTON AI. DAS: Official implementation for diffusion alignment as sampling. GitHub
+    repository, 2025. URL https://github.com/krafton-ai/DAS. Reproduction pinned to commit
+    2f4b2239f29ee59f80359bdfa5ed747b6d855a1e.
+
+[6] Raghav Singhal, Zachary Horvitz, Ryan Teehan, Mengye Ren, Zhou Yu, Kathleen Mckeown,
+    and Rajesh Ranganath. A general framework for inference-time scaling and steering of diffusion
+    models. In Proceedings of the 42nd International Conference on Machine Learning, volume 267
+    of Proceedings of Machine Learning Research, pages 55810–55827. PMLR, 2025. URL https:
+    //proceedings.mlr.press/v267/singhal25b.html.
+
+[7] Marta Skreta and collaborators. Feynman–kac correctors in diffusion: Official code. GitHub
+    repository, 2025. URL https://github.com/martaskrt/fkc-diffusion. Reproduction pinned
+    to commit aa6f5ed4a0ebb91329d4cd5823cc7e77c5e196e6.
+
+[8] Marta Skreta, Tara Akhound-Sadegh, Viktor Ohanesian, Roberto Bondesan, Alan Aspuru-Guzik,
+    Arnaud Doucet, Rob Brekelmans, Alexander Tong, and Kirill Neklyudov. Feynman-kac correctors
+    in diffusion: Annealing, guidance, and product of experts. In Proceedings of the 42nd International
+    Conference on Machine Learning, volume 267 of Proceedings of Machine Learning Research, pages
+    55906–55949. PMLR, 2025. URL https://proceedings.mlr.press/v267/skreta25a.html.
+
+
+
+
+                                                  11
+
