@@ -1,0 +1,1439 @@
+{
+  "schema_version": 1,
+  "paper": "Test-time Alignment of Diffusion Models without Reward Over-optimization",
+  "upstream_commit": "2f4b2239f29ee59f80359bdfa5ed747b6d855a1e",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    42
+  ],
+  "run_ids": [
+    "das-gmm-seed0-20260811-r2",
+    "das-gmm-seed1-20260811-r2",
+    "das-gmm-seed2-20260811-r1",
+    "das-gmm-seed3-20260811-r1",
+    "das-gmm-seed42-20260811-r2"
+  ],
+  "paper_figure1_top_row": {
+    "target_reward": -0.29,
+    "reward": {
+      "rl_ddpo": -0.07,
+      "direct_backprop": -0.96,
+      "approx_guidance": -338.0,
+      "smc_das": -0.22
+    },
+    "emd": {
+      "rl_ddpo": 1.58,
+      "direct_backprop": 3.69,
+      "approx_guidance": 15.49,
+      "smc_das": 0.82
+    }
+  },
+  "method_summary_across_seeds": {
+    "pretrained": {
+      "emd": {
+        "mean": 2.416909943104913,
+        "sd": 0.02525798738189181,
+        "ci95_low": 2.3855480095057326,
+        "ci95_high": 2.448271876704093
+      },
+      "reward": {
+        "mean": -10.370131079689472,
+        "sd": 0.08494014689771273,
+        "ci95_low": -10.4755982020945,
+        "ci95_high": -10.264663957284442
+      },
+      "reward_gap_abs_to_target": {
+        "mean": 10.079863452174068,
+        "sd": 0.08437964146276362,
+        "ci95_low": 9.975092289188414,
+        "ci95_high": 10.184634615159723
+      },
+      "mode_mass_l1_to_target": {
+        "mean": 1.30728,
+        "sd": 0.010618474466701852,
+        "ci95_low": 1.2940954225388503,
+        "ci95_high": 1.3204645774611496
+      }
+    },
+    "rl_ddpo": {
+      "emd": {
+        "mean": 2.076946292517852,
+        "sd": 0.8746623974629256,
+        "ci95_low": 0.9909094830055438,
+        "ci95_high": 3.1629831020301604
+      },
+      "reward": {
+        "mean": -0.20299206192299402,
+        "sd": 0.10961677991310807,
+        "ci95_low": -0.33909927114012606,
+        "ci95_high": -0.06688485270586195
+      },
+      "reward_gap_abs_to_target": {
+        "mean": 0.10590190629334022,
+        "sd": 0.08759967776606496,
+        "ci95_low": -0.00286745984303359,
+        "ci95_high": 0.214671272429714
+      },
+      "mode_mass_l1_to_target": {
+        "mean": 0.65588,
+        "sd": 0.19551350848470803,
+        "ci95_low": 0.41311791535203146,
+        "ci95_high": 0.8986420846479686
+      }
+    },
+    "direct_backprop": {
+      "emd": {
+        "mean": 9.655273158140373,
+        "sd": 16.011702093373447,
+        "ci95_low": -10.225880881165319,
+        "ci95_high": 29.536427197446066
+      },
+      "reward": {
+        "mean": -11.411605158692725,
+        "sd": 22.16316728066333,
+        "ci95_low": -38.930812057260056,
+        "ci95_high": 16.107601739874603
+      },
+      "reward_gap_abs_to_target": {
+        "mean": 11.121337531177321,
+        "sd": 22.163023990872105,
+        "ci95_low": -16.397691449614936,
+        "ci95_high": 38.640366511969575
+      },
+      "mode_mass_l1_to_target": {
+        "mean": 0.9964799999999999,
+        "sd": 0.6449490925646767,
+        "ci95_low": 0.19566993108825237,
+        "ci95_high": 1.7972900689117475
+      }
+    },
+    "approx_guidance": {
+      "emd": {
+        "mean": 47.02203477018343,
+        "sd": 27.668854435129592,
+        "ci95_low": 12.666614346542403,
+        "ci95_high": 81.37745519382446
+      },
+      "reward": {
+        "mean": -1311.458053446166,
+        "sd": 695.5246526567037,
+        "ci95_low": -2175.0659745131748,
+        "ci95_high": -447.85013237915757
+      },
+      "reward_gap_abs_to_target": {
+        "mean": 1311.1677858186506,
+        "sd": 695.5253909775046,
+        "ci95_low": 447.5589480052844,
+        "ci95_high": 2174.7766236320167
+      },
+      "mode_mass_l1_to_target": {
+        "mean": 0.7606,
+        "sd": 0.15846431775008535,
+        "ci95_low": 0.563840561649797,
+        "ci95_high": 0.9573594383502031
+      }
+    },
+    "smc_das": {
+      "emd": {
+        "mean": 1.6207800683792457,
+        "sd": 1.0765189503982175,
+        "ci95_low": 0.28410524428567263,
+        "ci95_high": 2.9574548924728186
+      },
+      "reward": {
+        "mean": -0.3667706405954124,
+        "sd": 0.2619901612810123,
+        "ci95_low": -0.6920743917416439,
+        "ci95_high": -0.04146688944918103
+      },
+      "reward_gap_abs_to_target": {
+        "mean": 0.15121115064649118,
+        "sd": 0.2181744756863675,
+        "ci95_low": -0.11968824114025431,
+        "ci95_high": 0.42211054243323665
+      },
+      "mode_mass_l1_to_target": {
+        "mean": 0.38152,
+        "sd": 0.20058058729597938,
+        "ci95_low": 0.13246630601601464,
+        "ci95_high": 0.6305736939839854
+      }
+    }
+  },
+  "primary_claim": {
+    "criterion": "DAS EMD is lower than every reproduced baseline and all target-active modes are covered, per seed",
+    "required_passes": 4,
+    "observed_passes": 3,
+    "verdict": "FAIL",
+    "per_seed": [
+      {
+        "seed": 0,
+        "pass": true,
+        "das_emd": 2.2070838251829543,
+        "best_baseline_emd": 3.1202782014072015,
+        "mode_coverage": 3,
+        "target_mode_count": 3
+      },
+      {
+        "seed": 1,
+        "pass": false,
+        "das_emd": 3.1109114510611326,
+        "best_baseline_emd": 1.598084500547861,
+        "mode_coverage": 3,
+        "target_mode_count": 3
+      },
+      {
+        "seed": 2,
+        "pass": true,
+        "das_emd": 0.709047543802481,
+        "best_baseline_emd": 1.4472342465434895,
+        "mode_coverage": 3,
+        "target_mode_count": 3
+      },
+      {
+        "seed": 3,
+        "pass": false,
+        "das_emd": 1.5684317243181927,
+        "best_baseline_emd": 1.5520682717100862,
+        "mode_coverage": 3,
+        "target_mode_count": 3
+      },
+      {
+        "seed": 42,
+        "pass": true,
+        "das_emd": 0.5084257975314682,
+        "best_baseline_emd": 1.289926593483468,
+        "mode_coverage": 3,
+        "target_mode_count": 3
+      }
+    ]
+  },
+  "improvement_over_paper_point_estimate": {
+    "emd_lower_is_better": {
+      "paper": 0.82,
+      "criterion": "95% t CI for mean lies entirely below paper point estimate",
+      "verdict": "INCONCLUSIVE"
+    },
+    "absolute_reward_gap_lower_is_better": {
+      "paper": 0.06999999999999998,
+      "criterion": "95% t CI for mean gap lies entirely below paper point estimate",
+      "verdict": "INCONCLUSIVE"
+    }
+  },
+  "qualification": "Five independent training/sampling seeds. EMD is the mean of five paper-style 500-sample subsample estimates within each seed; between-seed statistics use the five seed means. Paper Figure 1 provides point estimates but no seed-level uncertainty.",
+  "per_seed_payloads": [
+    {
+      "run_id": "das-gmm-seed0-20260811-r2",
+      "metric_path": "remote_artifacts/das-gmm-seed0-20260811-r2/output/das-gmm-seed0-20260811-r2/das_metrics.json",
+      "schema_version": 1,
+      "paper": "DAS",
+      "experiment": "official GMM notebook Figure 1",
+      "seed": 0,
+      "upstream_seed_replaced": 42,
+      "emd_estimator": {
+        "implementation": "scipy.stats.wasserstein_distance_nd",
+        "subsample_n": 500,
+        "replacement": true,
+        "repeats": 5,
+        "paper_notebook_repeats": 1
+      },
+      "mode_assignment": {
+        "centers": [
+          [
+            -4.0,
+            4.0
+          ],
+          [
+            0.0,
+            4.0
+          ],
+          [
+            4.0,
+            4.0
+          ],
+          [
+            -4.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            4.0,
+            0.0
+          ],
+          [
+            -4.0,
+            -4.0
+          ],
+          [
+            0.0,
+            -4.0
+          ],
+          [
+            4.0,
+            -4.0
+          ]
+        ],
+        "active_target_threshold": 0.01,
+        "target_active_modes": [
+          3,
+          4,
+          5
+        ]
+      },
+      "target": {
+        "reward": {
+          "mean": -0.28942675300726156,
+          "std": 0.28059210417114516,
+          "n": 10000
+        },
+        "mode_mass": [
+          0.0,
+          0.0,
+          0.0,
+          0.3073,
+          0.3709,
+          0.3216,
+          0.0001,
+          0.0,
+          0.0001
+        ]
+      },
+      "methods": {
+        "pretrained": {
+          "reward": {
+            "mean": -10.234966320594133,
+            "std": 7.983722396950311,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 9.945539567586872,
+          "emd_repeats": [
+            2.4740458165936396,
+            2.303570053457037,
+            2.4071934119901384,
+            2.414375257729104,
+            2.3435245567032346
+          ],
+          "emd_mean": 2.388541819294631,
+          "emd_std": 0.06628147728875186,
+          "mode_mass": [
+            0.1055,
+            0.1134,
+            0.1132,
+            0.125,
+            0.1098,
+            0.1152,
+            0.0997,
+            0.1126,
+            0.1056
+          ],
+          "mode_mass_l1_to_target": 1.2995999999999999,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.65
+        },
+        "rl_ddpo": {
+          "reward": {
+            "mean": -0.19645397427209418,
+            "std": 0.3998874809674766,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 0.09297277873516738,
+          "emd_repeats": [
+            3.5453277489445187,
+            2.796752155828047,
+            3.088129107751832,
+            3.2590976082184517,
+            2.912084386293157
+          ],
+          "emd_mean": 3.1202782014072015,
+          "emd_std": 0.2953748790146994,
+          "mode_mass": [
+            0.0,
+            0.0,
+            0.0,
+            0.0315,
+            0.1694,
+            0.7984,
+            0.0001,
+            0.0003,
+            0.0003
+          ],
+          "mode_mass_l1_to_target": 0.9546,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.0006999999999999999
+        },
+        "direct_backprop": {
+          "reward": {
+            "mean": -1.0620848727920413,
+            "std": 2.0033324087534816,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 0.7726581197847797,
+          "emd_repeats": [
+            4.463383160883836,
+            4.3271466077016765,
+            4.4471291802150965,
+            4.251415682205802,
+            4.099466386770934
+          ],
+          "emd_mean": 4.317708203555469,
+          "emd_std": 0.1500701959461732,
+          "mode_mass": [
+            0.0002,
+            0.0034,
+            0.0276,
+            0.0027,
+            0.0341,
+            0.8753,
+            0.0006,
+            0.0037,
+            0.0524
+          ],
+          "mode_mass_l1_to_target": 1.2828,
+          "target_mode_coverage": 2,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.0879
+        },
+        "approx_guidance": {
+          "reward": {
+            "mean": -1993.2333871973358,
+            "std": 3960.1041656454545,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 1992.9439604443285,
+          "emd_repeats": [
+            95.18115440551334,
+            79.59361868686815,
+            90.70580828952318,
+            80.27665197547242,
+            85.17211386709818
+          ],
+          "emd_mean": 86.18586944489506,
+          "emd_std": 6.722152189051024,
+          "mode_mass": [
+            0.0126,
+            0.0018,
+            0.0496,
+            0.1985,
+            0.1767,
+            0.3729,
+            0.0214,
+            0.0027,
+            0.1638
+          ],
+          "mode_mass_l1_to_target": 0.6060000000000001,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.2519
+        },
+        "smc_das": {
+          "reward": {
+            "mean": -0.8294743041429677,
+            "std": 1.6900535776220147,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 0.5400475511357061,
+          "emd_repeats": [
+            2.165745162601555,
+            2.2932913016027623,
+            1.9275675613355634,
+            2.093813598582311,
+            2.5550015017925793
+          ],
+          "emd_mean": 2.2070838251829543,
+          "emd_std": 0.23513124510658692,
+          "mode_mass": [
+            0.0,
+            0.0009,
+            0.0003,
+            0.2098,
+            0.3352,
+            0.4182,
+            0.027,
+            0.0072,
+            0.0014
+          ],
+          "mode_mass_l1_to_target": 0.2664000000000001,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.0368
+        }
+      }
+    },
+    {
+      "run_id": "das-gmm-seed1-20260811-r2",
+      "metric_path": "remote_artifacts/das-gmm-seed1-20260811-r2/output/das-gmm-seed1-20260811-r2/das_metrics.json",
+      "schema_version": 1,
+      "paper": "DAS",
+      "experiment": "official GMM notebook Figure 1",
+      "seed": 1,
+      "upstream_seed_replaced": 42,
+      "emd_estimator": {
+        "implementation": "scipy.stats.wasserstein_distance_nd",
+        "subsample_n": 500,
+        "replacement": true,
+        "repeats": 5,
+        "paper_notebook_repeats": 1
+      },
+      "mode_assignment": {
+        "centers": [
+          [
+            -4.0,
+            4.0
+          ],
+          [
+            0.0,
+            4.0
+          ],
+          [
+            4.0,
+            4.0
+          ],
+          [
+            -4.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            4.0,
+            0.0
+          ],
+          [
+            -4.0,
+            -4.0
+          ],
+          [
+            0.0,
+            -4.0
+          ],
+          [
+            4.0,
+            -4.0
+          ]
+        ],
+        "active_target_threshold": 0.01,
+        "target_active_modes": [
+          3,
+          4,
+          5
+        ]
+      },
+      "target": {
+        "reward": {
+          "mean": -0.29052180499217933,
+          "std": 0.2879855083024669,
+          "n": 10000
+        },
+        "mode_mass": [
+          0.0,
+          0.0,
+          0.0,
+          0.3135,
+          0.3677,
+          0.3185,
+          0.0002,
+          0.0,
+          0.0001
+        ]
+      },
+      "methods": {
+        "pretrained": {
+          "reward": {
+            "mean": -10.347165895516017,
+            "std": 8.078679368183844,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 10.056644090523838,
+          "emd_repeats": [
+            2.3630230510463996,
+            2.4041380782332626,
+            2.5478497976861556,
+            2.5136939457521827,
+            2.3354336816346724
+          ],
+          "emd_mean": 2.4328277108705345,
+          "emd_std": 0.09347567983729103,
+          "mode_mass": [
+            0.1052,
+            0.0999,
+            0.102,
+            0.1223,
+            0.1103,
+            0.1205,
+            0.1133,
+            0.1226,
+            0.1039
+          ],
+          "mode_mass_l1_to_target": 1.2932000000000001,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.6469
+        },
+        "rl_ddpo": {
+          "reward": {
+            "mean": -0.13436407592010566,
+            "std": 0.09384654761640852,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 0.15615772907207368,
+          "emd_repeats": [
+            1.4417867490241456,
+            1.5935992548939333,
+            1.5538578909490968,
+            1.8288210012556516,
+            1.572357606616478
+          ],
+          "emd_mean": 1.598084500547861,
+          "emd_std": 0.14169183408614236,
+          "mode_mass": [
+            0.0,
+            0.0,
+            0.0,
+            0.1506,
+            0.2942,
+            0.5552,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mode_mass_l1_to_target": 0.4734,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.0
+        },
+        "direct_backprop": {
+          "reward": {
+            "mean": -51.05484883346558,
+            "std": 21.549271434629162,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 50.764327028473396,
+          "emd_repeats": [
+            38.18189771687589,
+            38.13463031443854,
+            38.785027394381565,
+            37.73724255970418,
+            38.330671142353125
+          ],
+          "emd_mean": 38.23389382555066,
+          "emd_std": 0.3782635918120829,
+          "mode_mass": [
+            0.0,
+            0.0,
+            0.9998,
+            0.0,
+            0.0,
+            0.0002,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mode_mass_l1_to_target": 1.9995999999999998,
+          "target_mode_coverage": 0,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.9998
+        },
+        "approx_guidance": {
+          "reward": {
+            "mean": -1698.7109862641942,
+            "std": 3703.13153198449,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 1698.420464459202,
+          "emd_repeats": [
+            39.48848899295493,
+            49.805085496632685,
+            43.45947276541067,
+            45.45808862256,
+            41.493068327220115
+          ],
+          "emd_mean": 43.94084084095567,
+          "emd_std": 3.960370837875176,
+          "mode_mass": [
+            0.0074,
+            0.0021,
+            0.116,
+            0.4224,
+            0.0719,
+            0.2724,
+            0.0066,
+            0.0021,
+            0.0991
+          ],
+          "mode_mass_l1_to_target": 0.6838,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.23329999999999998
+        },
+        "smc_das": {
+          "reward": {
+            "mean": -0.31975966317272403,
+            "std": 0.3586149964828628,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 0.029237858180544696,
+          "emd_repeats": [
+            3.1214520187639563,
+            3.276210751229939,
+            3.6018497904306552,
+            2.798570001218908,
+            2.7564746936622067
+          ],
+          "emd_mean": 3.1109114510611326,
+          "emd_std": 0.3505845160413205,
+          "mode_mass": [
+            0.0,
+            0.0,
+            0.0,
+            0.1058,
+            0.2148,
+            0.6784,
+            0.0004,
+            0.0006,
+            0.0
+          ],
+          "mode_mass_l1_to_target": 0.7214,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.001
+        }
+      }
+    },
+    {
+      "run_id": "das-gmm-seed2-20260811-r1",
+      "metric_path": "remote_artifacts/das-gmm-seed2-20260811-r1/output/das-gmm-seed2-20260811-r1/das_metrics.json",
+      "schema_version": 1,
+      "paper": "DAS",
+      "experiment": "official GMM notebook Figure 1",
+      "seed": 2,
+      "upstream_seed_replaced": 42,
+      "emd_estimator": {
+        "implementation": "scipy.stats.wasserstein_distance_nd",
+        "subsample_n": 500,
+        "replacement": true,
+        "repeats": 5,
+        "paper_notebook_repeats": 1
+      },
+      "mode_assignment": {
+        "centers": [
+          [
+            -4.0,
+            4.0
+          ],
+          [
+            0.0,
+            4.0
+          ],
+          [
+            4.0,
+            4.0
+          ],
+          [
+            -4.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            4.0,
+            0.0
+          ],
+          [
+            -4.0,
+            -4.0
+          ],
+          [
+            0.0,
+            -4.0
+          ],
+          [
+            4.0,
+            -4.0
+          ]
+        ],
+        "active_target_threshold": 0.01,
+        "target_active_modes": [
+          3,
+          4,
+          5
+        ]
+      },
+      "target": {
+        "reward": {
+          "mean": -0.2892617034572109,
+          "std": 0.2837978063815494,
+          "n": 10000
+        },
+        "mode_mass": [
+          0.0,
+          0.0,
+          0.0,
+          0.3166,
+          0.3723,
+          0.3111,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "methods": {
+        "pretrained": {
+          "reward": {
+            "mean": -10.389707635804196,
+            "std": 8.048936472225526,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 10.100445932346986,
+          "emd_repeats": [
+            2.3907772273463586,
+            2.465197802007607,
+            2.4261149311984016,
+            2.4275499568782957,
+            2.3982027485312662
+          ],
+          "emd_mean": 2.421568533192386,
+          "emd_std": 0.029385475451418553,
+          "mode_mass": [
+            0.1055,
+            0.1174,
+            0.101,
+            0.115,
+            0.107,
+            0.1204,
+            0.1031,
+            0.1205,
+            0.1101
+          ],
+          "mode_mass_l1_to_target": 1.3152,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.6575999999999999
+        },
+        "rl_ddpo": {
+          "reward": {
+            "mean": -0.33582755520953833,
+            "std": 0.6631138824423228,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 0.046565851752327414,
+          "emd_repeats": [
+            1.4985429711911178,
+            1.471372948099503,
+            1.549536402303482,
+            1.498611688373524,
+            1.2181072227498215
+          ],
+          "emd_mean": 1.4472342465434895,
+          "emd_std": 0.13116766729310705,
+          "mode_mass": [
+            0.0018,
+            0.0006,
+            0.0004,
+            0.4742,
+            0.095,
+            0.428,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mode_mass_l1_to_target": 0.5546,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.0028
+        },
+        "direct_backprop": {
+          "reward": {
+            "mean": -1.722888208615293,
+            "std": 2.8272815273726364,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 1.433626505158082,
+          "emd_repeats": [
+            1.844707083535476,
+            1.9029535247065892,
+            1.981944741033649,
+            1.9355438287449491,
+            2.133506228201015
+          ],
+          "emd_mean": 1.9597310812443358,
+          "emd_std": 0.10923653525703376,
+          "mode_mass": [
+            0.0101,
+            0.0324,
+            0.0371,
+            0.0593,
+            0.3251,
+            0.4421,
+            0.0111,
+            0.0366,
+            0.0462
+          ],
+          "mode_mass_l1_to_target": 0.609,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.1735
+        },
+        "approx_guidance": {
+          "reward": {
+            "mean": -1365.4657665165362,
+            "std": 3399.3308452307983,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 1365.176504813079,
+          "emd_repeats": [
+            41.24640262799635,
+            36.004495963020325,
+            39.299768983879034,
+            41.42965683917847,
+            40.57393120287936
+          ],
+          "emd_mean": 39.710851123390704,
+          "emd_std": 2.234008495718019,
+          "mode_mass": [
+            0.0674,
+            0.0046,
+            0.0662,
+            0.4024,
+            0.0964,
+            0.1957,
+            0.0996,
+            0.0052,
+            0.0625
+          ],
+          "mode_mass_l1_to_target": 0.7826,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.3055
+        },
+        "smc_das": {
+          "reward": {
+            "mean": -0.22088272305219653,
+            "std": 0.316034425338883,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 0.06837898040501439,
+          "emd_repeats": [
+            0.8059261179163081,
+            0.807011227280637,
+            0.6814767863069715,
+            0.7562759844772933,
+            0.4945476030311956
+          ],
+          "emd_mean": 0.709047543802481,
+          "emd_std": 0.13036797753980078,
+          "mode_mass": [
+            0.0,
+            0.0,
+            0.0,
+            0.1992,
+            0.5173,
+            0.2829,
+            0.0002,
+            0.0003,
+            0.0001
+          ],
+          "mode_mass_l1_to_target": 0.29119999999999996,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.0006000000000000001
+        }
+      }
+    },
+    {
+      "run_id": "das-gmm-seed3-20260811-r1",
+      "metric_path": "remote_artifacts/das-gmm-seed3-20260811-r1/output/das-gmm-seed3-20260811-r1/das_metrics.json",
+      "schema_version": 1,
+      "paper": "DAS",
+      "experiment": "official GMM notebook Figure 1",
+      "seed": 3,
+      "upstream_seed_replaced": 42,
+      "emd_estimator": {
+        "implementation": "scipy.stats.wasserstein_distance_nd",
+        "subsample_n": 500,
+        "replacement": true,
+        "repeats": 5,
+        "paper_notebook_repeats": 1
+      },
+      "mode_assignment": {
+        "centers": [
+          [
+            -4.0,
+            4.0
+          ],
+          [
+            0.0,
+            4.0
+          ],
+          [
+            4.0,
+            4.0
+          ],
+          [
+            -4.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            4.0,
+            0.0
+          ],
+          [
+            -4.0,
+            -4.0
+          ],
+          [
+            0.0,
+            -4.0
+          ],
+          [
+            4.0,
+            -4.0
+          ]
+        ],
+        "active_target_threshold": 0.01,
+        "target_active_modes": [
+          3,
+          4,
+          5
+        ]
+      },
+      "target": {
+        "reward": {
+          "mean": -0.2905258435292149,
+          "std": 0.2852987929362829,
+          "n": 10000
+        },
+        "mode_mass": [
+          0.0001,
+          0.0,
+          0.0,
+          0.3114,
+          0.376,
+          0.3125,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "methods": {
+        "pretrained": {
+          "reward": {
+            "mean": -10.445757589773823,
+            "std": 8.05133659215716,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 10.155231746244608,
+          "emd_repeats": [
+            2.5226906652371226,
+            2.4513153073981098,
+            2.3963264826220185,
+            2.340008354401267,
+            2.5279306230155374
+          ],
+          "emd_mean": 2.447654286534811,
+          "emd_std": 0.08110231433303036,
+          "mode_mass": [
+            0.0931,
+            0.1241,
+            0.1177,
+            0.0982,
+            0.112,
+            0.1305,
+            0.1039,
+            0.1113,
+            0.1092
+          ],
+          "mode_mass_l1_to_target": 1.3184,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.6592999999999999
+        },
+        "rl_ddpo": {
+          "reward": {
+            "mean": -0.2837079281983522,
+            "std": 0.18304021960747324,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 0.006817915330862678,
+          "emd_repeats": [
+            3.0040284200944747,
+            2.6153150089869848,
+            2.8835481768563196,
+            3.0529144489497875,
+            3.0902335481486416
+          ],
+          "emd_mean": 2.9292079206072414,
+          "emd_std": 0.19199234176655855,
+          "mode_mass": [
+            0.0,
+            0.0,
+            0.0,
+            0.2239,
+            0.0894,
+            0.6867,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mode_mass_l1_to_target": 0.7484000000000001,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.0
+        },
+        "direct_backprop": {
+          "reward": {
+            "mean": -1.8030369357060154,
+            "std": 3.0451517516124773,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 1.5125110921768006,
+          "emd_repeats": [
+            1.5843082546300717,
+            1.6128844342544377,
+            1.3846923529151012,
+            1.5787357166005473,
+            1.5997206001502733
+          ],
+          "emd_mean": 1.5520682717100862,
+          "emd_std": 0.09451801063887852,
+          "mode_mass": [
+            0.0123,
+            0.0361,
+            0.0354,
+            0.0993,
+            0.3637,
+            0.3555,
+            0.0105,
+            0.0407,
+            0.0465
+          ],
+          "mode_mass_l1_to_target": 0.4488,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.1815
+        },
+        "approx_guidance": {
+          "reward": {
+            "mean": -1335.9067825070863,
+            "std": 3372.9422786104847,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 1335.6162566635571,
+          "emd_repeats": [
+            56.51244389670293,
+            52.99023236657965,
+            53.347432306582874,
+            63.04065707910651,
+            51.94298645659315
+          ],
+          "emd_mean": 55.56675042111302,
+          "emd_std": 4.512457765219072,
+          "mode_mass": [
+            0.1574,
+            0.0004,
+            0.0003,
+            0.1564,
+            0.0207,
+            0.5964,
+            0.0662,
+            0.0006,
+            0.0016
+          ],
+          "mode_mass_l1_to_target": 1.0206000000000002,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.22649999999999998
+        },
+        "smc_das": {
+          "reward": {
+            "mean": -0.21498520098509025,
+            "std": 0.24029152224875303,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 0.07554064254412465,
+          "emd_repeats": [
+            1.7128303116719754,
+            1.5254570759744677,
+            1.4319768763994976,
+            1.3543307038150452,
+            1.8175636537299775
+          ],
+          "emd_mean": 1.5684317243181927,
+          "emd_std": 0.19314739396603103,
+          "mode_mass": [
+            0.0,
+            0.0001,
+            0.0,
+            0.1111,
+            0.4084,
+            0.4804,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mode_mass_l1_to_target": 0.4008,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.0001
+        }
+      }
+    },
+    {
+      "run_id": "das-gmm-seed42-20260811-r2",
+      "metric_path": "remote_artifacts/das-gmm-seed42-20260811-r2/output/das-gmm-seed42-20260811-r2/das_metrics.json",
+      "schema_version": 1,
+      "paper": "DAS",
+      "experiment": "official GMM notebook Figure 1",
+      "seed": 42,
+      "upstream_seed_replaced": 42,
+      "emd_estimator": {
+        "implementation": "scipy.stats.wasserstein_distance_nd",
+        "subsample_n": 500,
+        "replacement": true,
+        "repeats": 5,
+        "paper_notebook_repeats": 1
+      },
+      "mode_assignment": {
+        "centers": [
+          [
+            -4.0,
+            4.0
+          ],
+          [
+            0.0,
+            4.0
+          ],
+          [
+            4.0,
+            4.0
+          ],
+          [
+            -4.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            4.0,
+            0.0
+          ],
+          [
+            -4.0,
+            -4.0
+          ],
+          [
+            0.0,
+            -4.0
+          ],
+          [
+            4.0,
+            -4.0
+          ]
+        ],
+        "active_target_threshold": 0.01,
+        "target_active_modes": [
+          3,
+          4,
+          5
+        ]
+      },
+      "target": {
+        "reward": {
+          "mean": -0.2916020325911497,
+          "std": 0.2776442716527998,
+          "n": 10000
+        },
+        "mode_mass": [
+          0.0,
+          0.0,
+          0.0,
+          0.3163,
+          0.3657,
+          0.318,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "methods": {
+        "pretrained": {
+          "reward": {
+            "mean": -10.433057956759185,
+            "std": 8.04821118758494,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 10.141455924168035,
+          "emd_repeats": [
+            2.315725427747915,
+            2.4572115287998457,
+            2.331479453381124,
+            2.4546176334250815,
+            2.410752784807038
+          ],
+          "emd_mean": 2.393957365632201,
+          "emd_std": 0.06705700741977969,
+          "mode_mass": [
+            0.1177,
+            0.1153,
+            0.1027,
+            0.118,
+            0.1137,
+            0.1133,
+            0.1106,
+            0.1133,
+            0.0954
+          ],
+          "mode_mass_l1_to_target": 1.3099999999999998,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.655
+        },
+        "rl_ddpo": {
+          "reward": {
+            "mean": -0.06460677601487973,
+            "std": 0.11749049715560866,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 0.22699525657626995,
+          "emd_repeats": [
+            1.2440251904165411,
+            1.297377763055298,
+            1.4105314836459992,
+            1.3376652504945015,
+            1.1600332798050004
+          ],
+          "emd_mean": 1.289926593483468,
+          "emd_std": 0.09468269453047737,
+          "mode_mass": [
+            0.0,
+            0.0,
+            0.0001,
+            0.2021,
+            0.6398,
+            0.158,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mode_mass_l1_to_target": 0.5484000000000001,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.0001
+        },
+        "direct_backprop": {
+          "reward": {
+            "mean": -1.4151669428846982,
+            "std": 2.4862169733179713,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 1.1235649102935485,
+          "emd_repeats": [
+            2.1217557319359215,
+            2.187751571826664,
+            2.0200828988606396,
+            2.429975676310948,
+            2.3052561642724014
+          ],
+          "emd_mean": 2.212964408641315,
+          "emd_std": 0.15950677502453714,
+          "mode_mass": [
+            0.0348,
+            0.0252,
+            0.0054,
+            0.4938,
+            0.3217,
+            0.0409,
+            0.0393,
+            0.0328,
+            0.0061
+          ],
+          "mode_mass_l1_to_target": 0.6422,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.1436
+        },
+        "approx_guidance": {
+          "reward": {
+            "mean": -163.97334474567776,
+            "std": 1248.4843549935683,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 163.6817427130866,
+          "emd_repeats": [
+            11.17847943424649,
+            8.743340034499349,
+            10.711602831461626,
+            8.909291399792066,
+            8.986596402814007
+          ],
+          "emd_mean": 9.705862020562709,
+          "emd_std": 1.1465636683366112,
+          "mode_mass": [
+            0.0111,
+            0.0034,
+            0.0093,
+            0.1975,
+            0.1295,
+            0.6268,
+            0.0031,
+            0.0031,
+            0.0162
+          ],
+          "mode_mass_l1_to_target": 0.7100000000000001,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.0462
+        },
+        "smc_das": {
+          "reward": {
+            "mean": -0.2487513116240837,
+            "std": 0.702445468173988,
+            "n": 10000
+          },
+          "reward_gap_abs_to_target": 0.04285072096706599,
+          "emd_repeats": [
+            0.5567887714322288,
+            0.5597426327927453,
+            0.45290695780971657,
+            0.3974160632122843,
+            0.5752745624103663
+          ],
+          "emd_mean": 0.5084257975314682,
+          "emd_std": 0.07881410861841022,
+          "mode_mass": [
+            0.0,
+            0.0027,
+            0.0018,
+            0.2812,
+            0.4751,
+            0.2392,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mode_mass_l1_to_target": 0.22780000000000003,
+          "target_mode_coverage": 3,
+          "target_mode_count": 3,
+          "spurious_mass_outside_target_modes": 0.0045000000000000005
+        }
+      }
+    }
+  ]
+}

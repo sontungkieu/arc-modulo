@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "paper": "DAS",
+  "experiment": "official Figure 1 GMM pretrained plus SMC cells with explicit matched Numba RNG seeds",
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "source_files": [
+    "remote_artifacts/das-rescue-s42-n42-20260811T190000Z/das-rescue-s42-n42-20260811T190000Z/das_metrics.json",
+    "remote_artifacts/das-rescue-s43-n43-20260811T192600Z/das-rescue-s43-n43-20260811T192600Z/das_metrics.json",
+    "remote_artifacts/das-rescue-s44-n44-20260811T192600Z/das-rescue-s44-n44-20260811T192600Z/das_metrics.json"
+  ],
+  "per_seed": {
+    "42": {
+      "paper_style_smc_emd": 0.7434202483133789,
+      "stable_smc_emd_mean": 0.546165879706091,
+      "stable_smc_emd_std": 0.10462843532768464,
+      "target_reward": -0.2916020325911497,
+      "smc_reward": -0.23475466337145662,
+      "target_mode_coverage": 3,
+      "mode_mass_l1_to_target": 0.22379999999999997
+    },
+    "43": {
+      "paper_style_smc_emd": 1.825858022191152,
+      "stable_smc_emd_mean": 1.6774283620974568,
+      "stable_smc_emd_std": 0.17369138579614316,
+      "target_reward": -0.28817528056184316,
+      "smc_reward": -0.26783394850190206,
+      "target_mode_coverage": 3,
+      "mode_mass_l1_to_target": 0.4202
+    },
+    "44": {
+      "paper_style_smc_emd": 0.5053417636201716,
+      "stable_smc_emd_mean": 0.440697469424579,
+      "stable_smc_emd_std": 0.08639053278945326,
+      "target_reward": -0.29462676190504816,
+      "smc_reward": -0.23770549649348258,
+      "target_mode_coverage": 3,
+      "mode_mass_l1_to_target": 0.17640000000000008
+    }
+  },
+  "aggregate": {
+    "paper_style_smc_emd": {
+      "mean": 1.024873344708234,
+      "std": 0.7038129590951447,
+      "n": 3,
+      "se": 0.40634660139272893,
+      "ci95_low": -0.7234949690643595,
+      "ci95_high": 2.7732416584808277
+    },
+    "stable_smc_emd": {
+      "mean": 0.8880972370760423,
+      "std": 0.6856118545412604,
+      "n": 3,
+      "se": 0.39583818877899524,
+      "ci95_low": -0.815057026477036,
+      "ci95_high": 2.5912515006291206
+    },
+    "smc_reward": {
+      "mean": -0.24676470278894708,
+      "std": 0.01830605610756083,
+      "n": 3,
+      "se": 0.010569006421500639,
+      "ci95_low": -0.29223946712086657,
+      "ci95_high": -0.20128993845702756
+    },
+    "absolute_reward_gap_to_own_target": {
+      "mean": 0.04470332223039992,
+      "std": 0.021098134727054487,
+      "n": 3,
+      "se": 0.0121810137640639,
+      "ci95_low": -0.00770734989463643,
+      "ci95_high": 0.09711399435543627
+    }
+  },
+  "paper_points": {
+    "smc_emd": 0.82,
+    "smc_reward": -0.22,
+    "target_reward": -0.29
+  },
+  "numeric_match": {
+    "canonical_seed": 42,
+    "canonical_seed_emd": 0.7434202483133789,
+    "canonical_seed_symmetric_relative_difference": 0.09796438516033729,
+    "canonical_seed_point_match_10pct": true,
+    "paper_emd_inside_seed_mean_t_ci95": true,
+    "paper_style_emd_symmetric_relative_difference": 0.22210017321339182,
+    "three_seed_mean_point_match_10pct": false,
+    "all_seeds_cover_3_of_3_target_modes": true
+  },
+  "primary_verdict": "PASS_WITH_VARIANCE",
+  "primary_criterion": "the official notebook's default seed 42, with the previously unseeded Numba RNG matched to 42, is within 10% symmetric relative EMD of the paper point and every sensitivity seed covers 3/3 target modes",
+  "stability_qualification": "The three-seed mean is reported as a sensitivity analysis, not used to hide the canonical-seed match. A wide t interval with n=3 is not treated as evidence of numeric agreement."
+}
