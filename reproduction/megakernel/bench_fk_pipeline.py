@@ -121,6 +121,17 @@ def main() -> None:
             no_split_module_classes=no_split_modules,
             dtype=torch.float16,
         )
+        non_gpu_placements = {
+            module: device
+            for module, device in unet_device_map.items()
+            if not isinstance(device, int)
+            and not (isinstance(device, str) and device.startswith("cuda:"))
+        }
+        if non_gpu_placements:
+            raise RuntimeError(
+                "unet-sharded requires a GPU-only device map; increase "
+                f"--max-memory-gib (non-GPU placements={non_gpu_placements})"
+            )
         gpu_devices = {
             int(device.split(":", 1)[1])
             if isinstance(device, str) and device.startswith("cuda:")
@@ -134,6 +145,7 @@ def main() -> None:
                 "unet-sharded did not place UNet layers on at least two GPUs; "
                 f"lower --max-memory-gib (map={unet_device_map})"
             )
+        print("UNET_DEVICE_MAP " + json.dumps(unet_device_map, sort_keys=True))
         pipe.unet = dispatch_model(pipe.unet, device_map=unet_device_map)
         # Prompt encoding and latent scheduler state originate on cuda:0. Keep
         # the smaller components there; Accelerate hooks transfer activations

@@ -199,7 +199,7 @@ def _torch_run(args: argparse.Namespace) -> tuple[list[Result], dict[str, Any]]:
                     # iteration prevents a later replay from overwriting an
                     # output that the diffusion recurrence still owns.
                     torch.compiler.cudagraph_mark_step_begin()
-                    x = compiled_step(x, alphas[index], timesteps[index])
+                    x = compiled_step(x, alphas[index], timesteps[index]).clone()
                 return x
 
             run_once = run_compiled_steps
