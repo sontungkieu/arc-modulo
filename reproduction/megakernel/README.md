@@ -77,6 +77,8 @@ hơn eager; một mode chỉ được chấp nhận khi đồng thời qua corre
 | T4 synthetic loop | CUDA Graph step | 0.04145 | 0.02439 | 1.70x | pass |
 | T4 SD2.1, 2 particles x 20 steps | compiled UNet | 4.49768 | 3.74812 | 1.20x | reject: latent max error 1.082 |
 | T4 SDXL, forced two-GPU UNet shard | layer dispatch | 7.65612 | 8.60627 | 0.890x | correct, but 12.4% slower |
+| TPU synthetic loop | `jit(step)` | 0.52526 | 0.01955 | 26.87x | pass; first call 0.804 s |
+| TPU synthetic loop | `jit(lax.scan)` | 0.52526 | 0.00174 | 301.35x | pass; first call 1.332 s |
 
 Evidence:
 
@@ -93,14 +95,20 @@ Evidence:
   1) và chậm hơn single-GPU. Đây là feasibility evidence khi áp per-GPU cap,
   chưa phải bằng chứng một model lớn hơn 16 GB đã chạy thành công.
 - [TPU r4](https://www.kaggle.com/code/johnntlhudson/arc-megakernel-tpu-r4-20260816)
-  dùng commit `427b771`, KJO runtime 0.12.2 và locked JAX environment; job đang
-  chờ terminal evidence nên chưa có tuyên bố speedup TPU.
+  dùng commit `427b771`, KJO runtime 0.12.2, Python 3.11.6, UV 0.11.13 và locked
+  JAX 0.6.2 environment. Cả ba mode cho output khớp eager tuyệt đối trong phép
+  đo này. `jit(scan)` nhanh hơn `jit(step)` 11.21x, tách được lợi ích compile cả
+  loop khỏi lợi ích compile riêng denoiser step. Tám TPU core được nhìn thấy,
+  nhưng benchmark không khai báo sharding nên chỉ là single-default-device
+  launch-overhead proxy, không phải multi-core hay full diffusion-model result.
 
 Kết luận tạm thời: tối ưu launch overhead cải thiện mạnh microbenchmark, nhưng
 không tự động chuyển thành tốc độ end-to-end khi UNet compute chiếm ưu thế.
 Trên T4, `torch.compile` là hướng đáng tiếp tục nếu tìm được correctness issue;
 trên P100 nên giữ eager. Sharding chỉ nên là fallback để fit model và phải đo
-PCIe overhead, không phải mặc định để tăng tốc.
+PCIe overhead, không phải mặc định để tăng tốc. TPU `jit(lax.scan)` đã pass
+proxy gate rất mạnh; bước tiếp theo cần port một denoiser thật sang JAX và đo
+cả compile amortization lẫn device sharding trước khi áp kết luận 301x cho model.
 
 ## Chạy local smoke test
 
