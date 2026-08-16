@@ -91,6 +91,29 @@ class ResultComparisonTest(unittest.TestCase):
             payload = json.loads(result_path.read_text(encoding="utf-8"))
             self.assertEqual(payload["accepted_modes"], ["compile-unet"])
 
+    def test_missing_optional_input_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            missing = root / "compile.json"
+            result_path = root / "comparison.json"
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(ROOT / "compare_results.py"),
+                    "--input",
+                    str(missing),
+                    "--output",
+                    str(result_path),
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            payload = json.loads(result_path.read_text(encoding="utf-8"))
+            self.assertEqual(payload["missing_inputs"], [str(missing)])
+            self.assertIn("no eager baseline", payload["recommendation"])
+
 
 if __name__ == "__main__":
     unittest.main()

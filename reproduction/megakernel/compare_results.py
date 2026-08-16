@@ -22,7 +22,9 @@ def main() -> None:
     parser.add_argument("--input", action="append", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    payloads = [_load(path) for path in args.input]
+    existing_inputs = [path for path in args.input if path.is_file()]
+    missing_inputs = [str(path) for path in args.input if not path.is_file()]
+    payloads = [_load(path) for path in existing_inputs]
     real = [
         item
         for item in payloads
@@ -78,7 +80,8 @@ def main() -> None:
     ]
     result = {
         "schema_version": 1,
-        "inputs": [str(path) for path in args.input],
+        "inputs": [str(path) for path in existing_inputs],
+        "missing_inputs": missing_inputs,
         "comparison": comparisons,
         "acceptance_gate": {
             "minimum_speedup": 1.05,
@@ -89,7 +92,11 @@ def main() -> None:
         "recommendation": (
             "adopt fastest accepted mode for this exact hardware/model shape"
             if accepted
-            else "keep eager; optimization did not clear both speed and correctness gates"
+            else (
+                "keep eager; optimization did not clear both speed and correctness gates"
+                if eager
+                else "no eager baseline artifact; run is not comparable"
+            )
         ),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
