@@ -17,6 +17,21 @@ def _load(path: Path) -> dict[str, Any]:
     return payload
 
 
+def _workload_key(item: dict[str, Any]) -> tuple[Any, ...]:
+    return tuple(
+        item.get(key)
+        for key in (
+            "model_id",
+            "pipeline",
+            "particles",
+            "steps",
+            "height",
+            "width",
+            "decode",
+        )
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", action="append", type=Path, required=True)
@@ -30,21 +45,22 @@ def main() -> None:
         for item in payloads
         if item.get("benchmark") == "fk_steering_real_pipeline_denoising"
     ]
-    eager = next(
-        (
-            item
-            for item in real
-            if item.get("mode") == "eager"
-            and item.get("device_map_requested") == "single"
-        ),
-        None,
-    )
+    eager_by_workload = {
+        _workload_key(item): item
+        for item in real
+        if item.get("mode") == "eager" and item.get("device_map_requested") == "single"
+    }
     comparisons: list[dict[str, Any]] = []
     for item in real:
+        eager = eager_by_workload.get(_workload_key(item))
         comparison: dict[str, Any] = {
             "path": item["_path"],
             "mode": item.get("mode"),
             "device_map": item.get("device_map_requested"),
+            "model_id": item.get("model_id"),
+            "pipeline": item.get("pipeline"),
+            "workload_key": list(_workload_key(item)),
+            "has_matching_single_eager": eager is not None,
             "status": item.get("status"),
             "median_s": item.get("median_s"),
             "particle_steps_per_s": item.get("particle_steps_per_s"),
@@ -73,7 +89,7 @@ def main() -> None:
     accepted = [
         row
         for row in comparisons
-        if row.get("mode") != "eager"
+        if not (row.get("mode") == "eager" and row.get("device_map") == "single")
         and row.get("status") == "ok"
         and (row.get("speedup_vs_single_eager") or 0.0) >= 1.05
         and (row.get("probe_max_abs_error_vs_eager") or 0.0) <= 5e-3
@@ -88,13 +104,13 @@ def main() -> None:
             "maximum_probe_abs_error": 5e-3,
             "requires_no_fallback": True,
         },
-        "accepted_modes": [row["mode"] for row in accepted],
+        "accepted_modes": [f"{row['mode']}:{row['device_map']}" for row in accepted],
         "recommendation": (
             "adopt fastest accepted mode for this exact hardware/model shape"
             if accepted
             else (
                 "keep eager; optimization did not clear both speed and correctness gates"
-                if eager
+                if eager_by_workload
                 else "no eager baseline artifact; run is not comparable"
             )
         ),

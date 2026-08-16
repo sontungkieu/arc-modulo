@@ -89,7 +89,7 @@ class ResultComparisonTest(unittest.TestCase):
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             payload = json.loads(result_path.read_text(encoding="utf-8"))
-            self.assertEqual(payload["accepted_modes"], ["compile-unet"])
+            self.assertEqual(payload["accepted_modes"], ["compile-unet:single"])
 
     def test_missing_optional_input_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
