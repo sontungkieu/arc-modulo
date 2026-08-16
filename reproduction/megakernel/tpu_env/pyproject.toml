@@ -1,0 +1,11 @@
+[project]
+name = "fk-steering-tpu-loop-benchmark"
+version = "0.1.0"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "jax[tpu]==0.6.2",
+    "numpy==2.2.6",
+]
+
+[tool.uv]
+package = false

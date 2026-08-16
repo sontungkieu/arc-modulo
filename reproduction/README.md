@@ -21,6 +21,12 @@ exact nằm ở branch `main` vì cần layout `upstream/fk-steering`.
 Verdict: **PARTIAL** — chỉ là reproduction định tính/một prompt, không phải
 GenEval table và không đủ để tuyên bố phương pháp thắng baseline.
 
+Nhánh `experiment/fk-steering-megakernel` bổ sung một experiment độc lập tại
+[`megakernel/`](megakernel/): benchmark launch-overhead, compiled sampling,
+CUDA Graph, XLA scan và fallback sharding. Các artifact phân biệt rõ true
+megakernel với mega-launch approximation; chưa trộn benchmark systems này vào
+verdict reproduction khoa học ở trên.
+
 Phần discrete diffusion có submodule `discrete_diffusion/mdlm`; lấy bằng
 `git submodule update --init --recursive` nếu cần. Phạm vi ảnh đã chạy không
 dùng submodule này.
