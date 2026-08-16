@@ -183,24 +183,43 @@ def _torch_run(args: argparse.Namespace) -> tuple[list[Result], dict[str, Any]]:
 
         graph_wrapper: CudaGraphCallable | None = None
         if mode == "eager":
-            run_once = lambda: loop(step, initial.clone())
+
+            def run_once() -> torch.Tensor:
+                return loop(step, initial.clone())
+
         elif mode == "compile-step":
             compiled_step = torch.compile(step, mode="reduce-overhead", fullgraph=True)
-            run_once = lambda compiled_step=compiled_step: loop(
-                compiled_step, initial.clone()
-            )
+
+            def run_compiled_steps(
+                compiled_step: Callable[..., torch.Tensor] = compiled_step,
+            ) -> torch.Tensor:
+                x = initial.clone()
+                for index in range(args.steps):
+                    # reduce-overhead uses CUDAGraph Trees. Marking the logical
+                    # iteration prevents a later replay from overwriting an
+                    # output that the diffusion recurrence still owns.
+                    torch.compiler.cudagraph_mark_step_begin()
+                    x = compiled_step(x, alphas[index], timesteps[index])
+                return x
+
+            run_once = run_compiled_steps
         elif mode == "compile-loop":
             compiled_loop = torch.compile(
                 full_loop, mode="reduce-overhead", fullgraph=True
             )
-            run_once = lambda compiled_loop=compiled_loop: compiled_loop(
-                initial.clone()
-            )
+
+            def run_once(
+                compiled_loop: Callable[[torch.Tensor], torch.Tensor] = compiled_loop,
+            ) -> torch.Tensor:
+                return compiled_loop(initial.clone())
+
         else:
             graph_wrapper = CudaGraphCallable(step)
-            run_once = lambda graph_wrapper=graph_wrapper: loop(
-                graph_wrapper, initial.clone()
-            )
+
+            def run_once(
+                graph_wrapper: CudaGraphCallable = graph_wrapper,
+            ) -> torch.Tensor:
+                return loop(graph_wrapper, initial.clone())
 
         try:
             synchronize()
@@ -324,15 +343,22 @@ def _jax_run(args: argparse.Namespace) -> tuple[list[Result], dict[str, Any]]:
     eager_median: float | None = None
     for mode in modes:
         if mode == "eager":
-            run_once = lambda: eager_loop(initial, step)
+
+            def run_once() -> Any:
+                return eager_loop(initial, step)
+
         elif mode in {"jit-step", "compile-step"}:
             compiled_step = jax.jit(step)
-            run_once = lambda compiled_step=compiled_step: eager_loop(
-                initial, compiled_step
-            )
+
+            def run_once(compiled_step: Callable[..., Any] = compiled_step) -> Any:
+                return eager_loop(initial, compiled_step)
+
         elif mode in {"jit-scan", "compile-loop"}:
             compiled_scan = jax.jit(scan_loop)
-            run_once = lambda compiled_scan=compiled_scan: compiled_scan(initial)
+
+            def run_once(compiled_scan: Callable[..., Any] = compiled_scan) -> Any:
+                return compiled_scan(initial)
+
         else:
             result = Result(
                 "jax",

@@ -22,9 +22,11 @@ compiled control flow; cả hai vẫn khác true megakernel.
 2. `bench_fk_pipeline.py` chạy model thật qua pipeline FK Steering, nhưng tắt
    reward/resampling để cô lập denoising path:
    - eager;
-   - compiled UNet;
+   - compiled UNet with compiler CUDA Graphs disabled so recurrent outputs are
+     not silently reused;
    - CUDA-Graph UNet;
-   - `device_map=balanced` để thử fit model qua hai T4.
+   - pipeline `device_map=balanced` và layer-level `unet-sharded` để phân biệt
+     component placement với sharding bên trong denoiser.
 
 Benchmark SD2.1 mặc định dùng mirror public
 `sd2-community/stable-diffusion-2-1`, giống runtime substitution của
@@ -53,8 +55,10 @@ compile có thể làm tổng thời gian tệ hơn dù steady-state nhanh hơn.
   2.4.0 tương thích Pascal; không được dùng nhầm notebook interpreter.
 - T4 x2 chạy được Inductor/CUDA Graph. Với model vừa một GPU, data parallel cho
   prompt/particle độc lập thường hợp lý hơn model sharding. Với model không vừa,
-  `device_map=balanced` là fallback để fit; PCIe transfer có thể làm latency
-  chậm hơn và được báo như trade-off, không gọi là speedup.
+  thử pipeline `device_map=balanced` trước; `unet-sharded` dùng Accelerate hooks
+  để chia layer của chính denoiser khi component lớn nhất vẫn không vừa một GPU.
+  PCIe transfer có thể làm latency chậm hơn và được báo như trade-off, không gọi
+  là speedup.
 - TPU không chạy CUDA megakernel. `tpu_env/uv.lock` khóa JAX và đường tối ưu là
   `jax.jit(jax.lax.scan)`. Đây mới là phép so backend tương đương về sampling
   loop; model FK PyTorch chưa được tuyên bố là đã port sang TPU.

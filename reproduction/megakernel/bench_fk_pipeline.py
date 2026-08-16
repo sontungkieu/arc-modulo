@@ -49,7 +49,9 @@ def main() -> None:
     parser.add_argument("--model-id", default="sd2-community/stable-diffusion-2-1")
     parser.add_argument("--pipeline", choices=("sd", "sdxl"), default="sd")
     parser.add_argument(
-        "--device-map", choices=("single", "balanced"), default="single"
+        "--device-map",
+        choices=("single", "balanced", "unet-sharded"),
+        default="single",
     )
     parser.add_argument("--max-memory-gib", type=float)
     parser.add_argument("--particles", type=int, default=4)
@@ -72,11 +74,11 @@ def main() -> None:
 
     if not torch.cuda.is_available():
         raise RuntimeError("The real FK pipeline benchmark requires CUDA")
-    if args.device_map == "balanced" and torch.cuda.device_count() < 2:
-        raise RuntimeError("balanced device_map requires at least two visible GPUs")
-    if args.device_map == "balanced" and args.mode != "eager":
+    if args.device_map != "single" and torch.cuda.device_count() < 2:
+        raise RuntimeError(f"{args.device_map} requires at least two visible GPUs")
+    if args.device_map != "single" and args.mode != "eager":
         raise ValueError(
-            "compile/CUDA Graph and cross-device balanced placement are separate benchmark groups"
+            "compile/CUDA Graph and cross-device placement are separate benchmark groups"
         )
 
     pipeline_class = (
@@ -99,8 +101,47 @@ def main() -> None:
     load_started = time.perf_counter()
     pipe = pipeline_class.from_pretrained(args.model_id, **load_kwargs)
     pipe.scheduler = DDIMScheduler.from_config(pipe.scheduler.config)
+    unet_device_map = None
     if args.device_map == "single":
         pipe = pipe.to("cuda")
+    elif args.device_map == "unet-sharded":
+        from accelerate import dispatch_model, infer_auto_device_map
+
+        per_gpu_limit = args.max_memory_gib or 0.8 * min(
+            torch.cuda.get_device_properties(index).total_memory / (1024**3)
+            for index in range(torch.cuda.device_count())
+        )
+        max_memory = {
+            index: f"{per_gpu_limit:g}GiB" for index in range(torch.cuda.device_count())
+        }
+        no_split_modules = getattr(pipe.unet, "_no_split_modules", None) or []
+        unet_device_map = infer_auto_device_map(
+            pipe.unet,
+            max_memory=max_memory,
+            no_split_module_classes=no_split_modules,
+            dtype=torch.float16,
+        )
+        gpu_devices = {
+            int(device.split(":", 1)[1])
+            if isinstance(device, str) and device.startswith("cuda:")
+            else device
+            for device in unet_device_map.values()
+            if isinstance(device, int)
+            or (isinstance(device, str) and device.startswith("cuda:"))
+        }
+        if len(gpu_devices) < 2:
+            raise RuntimeError(
+                "unet-sharded did not place UNet layers on at least two GPUs; "
+                f"lower --max-memory-gib (map={unet_device_map})"
+            )
+        pipe.unet = dispatch_model(pipe.unet, device_map=unet_device_map)
+        # Prompt encoding and latent scheduler state originate on cuda:0. Keep
+        # the smaller components there; Accelerate hooks transfer activations
+        # only at UNet shard boundaries.
+        for component_name in ("vae", "text_encoder", "text_encoder_2"):
+            component = getattr(pipe, component_name, None)
+            if isinstance(component, torch.nn.Module):
+                component.to("cuda:0")
     pipe.set_progress_bar_config(disable=True)
     load_s = time.perf_counter() - load_started
 
@@ -112,7 +153,11 @@ def main() -> None:
                 f"compile-unet is disabled for compute capability {capability}"
             )
         pipe.unet.to(memory_format=torch.channels_last)
-        pipe.unet = torch.compile(pipe.unet, mode="reduce-overhead", fullgraph=True)
+        pipe.unet = torch.compile(
+            pipe.unet,
+            fullgraph=True,
+            options={"triton.cudagraphs": False},
+        )
     elif args.mode == "cuda-graph-unet":
         graph_wrapper = install_unet_cudagraph(pipe.unet)
 
@@ -192,7 +237,7 @@ def main() -> None:
         "true_megakernel": False,
         "optimization_kind": {
             "eager": "none",
-            "compile-unet": "operator fusion plus CUDA Graph when supported by torch.compile",
+            "compile-unet": "operator fusion with compiler CUDA Graphs disabled for output ownership",
             "cuda-graph-unet": "multi-kernel CUDA Graph mega-launch",
         }[args.mode],
         "status": status,
@@ -201,6 +246,7 @@ def main() -> None:
         "pipeline": args.pipeline,
         "device_map_requested": args.device_map,
         "hf_device_map": getattr(pipe, "hf_device_map", None),
+        "unet_device_map": unet_device_map,
         "max_memory_gib": args.max_memory_gib,
         "particles": args.particles,
         "steps": args.steps,
