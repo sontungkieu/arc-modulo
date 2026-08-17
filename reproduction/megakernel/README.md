@@ -27,6 +27,21 @@ compiled control flow; cả hai vẫn khác true megakernel.
    - CUDA-Graph UNet;
    - pipeline `device_map=balanced` và layer-level `unet-sharded` để phân biệt
      component placement với sharding bên trong denoiser.
+3. `bench_fk_paired.py` là gate quyết định cho model thật. Eager và candidate
+   dùng chung đúng một model đã load, prompt batch, initial latent tường minh,
+   seed, scheduler và layout bộ nhớ. Script đo riêng:
+   - denoising-only để cô lập UNet/scheduler;
+   - full FK Steering theo cấu hình paper (`4` particles, `100` steps,
+     ImageReward, DDIM `eta=1`, resampling từ step `20` đến `80` mỗi `20`
+     steps);
+   - first call, steady-state median, compile break-even, peak memory;
+   - sai số final output và latent sau từng step bằng contract
+     `atol=rtol=5e-3`.
+
+Trace correctness chạy ngoài các mẫu latency để phép copy latent về CPU không
+làm chậm số benchmark. Với `torch.compile`, baseline và candidate đều giữ
+layout contiguous nguyên bản của repo; như vậy không trộn ảnh hưởng của
+channels-last vào sai số hay speedup.
 
 Benchmark SD2.1 mặc định dùng mirror public
 `sd2-community/stable-diffusion-2-1`, giống runtime substitution của
@@ -134,6 +149,22 @@ uv run --project reproduction --frozen \
   python reproduction/megakernel/bench_fk_pipeline.py \
   --mode compile-unet --steps 20 --particles 4 \
   --output outputs/fk-compile.json
+```
+
+Gate paired denoising và full FK thật:
+
+```bash
+uv run --project reproduction --frozen \
+  python reproduction/megakernel/bench_fk_paired.py \
+  --candidate compile-unet --workload denoise \
+  --particles 4 --steps 100 --warmups 1 --repeats 3 \
+  --output outputs/fk-paired-denoise-compile.json
+
+uv run --project reproduction --frozen \
+  python reproduction/megakernel/bench_fk_paired.py \
+  --candidate cuda-graph-unet --workload full-fk \
+  --particles 4 --steps 100 --warmups 1 --repeats 3 \
+  --output outputs/fk-paired-full-cudagraph.json
 ```
 
 Nguồn kỹ thuật chính:

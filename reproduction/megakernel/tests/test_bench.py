@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import subprocess
 import sys
@@ -8,6 +9,16 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _load_paired_module():
+    spec = importlib.util.spec_from_file_location(
+        "bench_fk_paired", ROOT / "bench_fk_paired.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
 
 
 class LoopBenchmarkTest(unittest.TestCase):
@@ -113,6 +124,29 @@ class ResultComparisonTest(unittest.TestCase):
             payload = json.loads(result_path.read_text(encoding="utf-8"))
             self.assertEqual(payload["missing_inputs"], [str(missing)])
             self.assertIn("no eager baseline", payload["recommendation"])
+
+
+class PairedNumericsTest(unittest.TestCase):
+    def test_difference_uses_allclose_contract(self) -> None:
+        import numpy as np
+
+        module = _load_paired_module()
+        reference = np.array([1.0, 10.0], dtype=np.float32)
+        candidate = np.array([1.001, 10.04], dtype=np.float32)
+        result = module.difference(reference, candidate, atol=0.002, rtol=0.005)
+        self.assertTrue(result["allclose"])
+        self.assertEqual(result["violation_fraction"], 0.0)
+
+    def test_trace_reports_first_failed_step(self) -> None:
+        import numpy as np
+
+        module = _load_paired_module()
+        reference = [np.zeros(2, dtype=np.float32) for _ in range(3)]
+        candidate = [array.copy() for array in reference]
+        candidate[1][0] = 1.0
+        result = module.trace_difference(reference, candidate, atol=1e-3, rtol=1e-3)
+        self.assertFalse(result["all_steps_allclose"])
+        self.assertEqual(result["first_failed_step"], 1)
 
 
 if __name__ == "__main__":
