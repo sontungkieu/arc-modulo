@@ -547,7 +547,16 @@ class FKDStableDiffusionXL(
         else:
             batch_size = prompt_embeds.shape[0]
 
-        device = self._execution_device
+        # Component-split inference may keep the UNet/latents on one GPU while
+        # prompt encoding, VAE decoding, and reward evaluation live on another.
+        # Diffusers infers ``_execution_device`` from the first registered
+        # module, which is not necessarily the UNet in that layout, so allow
+        # the caller to declare the latent/denoising device explicitly.
+        device = (
+            torch.device(fkd_args["execution_device"])
+            if fkd_args is not None and fkd_args.get("execution_device")
+            else self._execution_device
+        )
 
         # 3. Encode input prompt
         lora_scale = (
@@ -685,14 +694,22 @@ class FKDStableDiffusionXL(
             # convert to pil image
             imagesx = self.image_processor.postprocess(x, output_type=output_type)
             imagesx = [image for image in imagesx]
+            reward_prompts = fkd_args.get("reward_prompts", prompt)
+            if reward_prompts is None:
+                raise ValueError(
+                    "FK reward prompts are required when precomputed prompt "
+                    "embeddings are supplied"
+                )
             rewards = get_reward_function(
                 fkd_args["guidance_reward_fn"], 
                 images=imagesx, 
-                prompts=prompt, 
+                prompts=reward_prompts,
                 metric_to_chase=fkd_args.get("metric_to_chase", None)
             )
 
-            return torch.tensor(rewards).to(x.device)
+            # FK state and multinomial resampling follow the latent/UNet
+            # device. Reward inference may run on a different GPU.
+            return torch.as_tensor(rewards, device=device)
 
         print('Args:', fkd_args)
         if fkd_args is not None and fkd_args['use_smc']:
@@ -818,7 +835,11 @@ class FKDStableDiffusionXL(
                 if XLA_AVAILABLE:
                     xm.mark_step()
 
+        if fkd_args is not None and fkd_args["use_smc"]:
+            self._fkd_trace = fkd.trace
+
         if not output_type == "latent":
+            vae_device = next(iter(self.vae.parameters())).device
             # make sure the VAE is in float32 mode, as it overflows in float16
             needs_upcasting = (
                 self.vae.dtype == torch.float16 and self.vae.config.force_upcast
@@ -827,12 +848,16 @@ class FKDStableDiffusionXL(
             if needs_upcasting:
                 self.upcast_vae()
                 latents = latents.to(
-                    next(iter(self.vae.post_quant_conv.parameters())).dtype
+                    device=vae_device,
+                    dtype=next(iter(self.vae.post_quant_conv.parameters())).dtype,
                 )
             elif latents.dtype != self.vae.dtype:
                 if torch.backends.mps.is_available():
                     # some platforms (eg. apple mps) misbehave due to a pytorch bug: https://github.com/pytorch/pytorch/pull/99272
                     self.vae = self.vae.to(latents.dtype)
+                latents = latents.to(device=vae_device, dtype=self.vae.dtype)
+            elif latents.device != vae_device:
+                latents = latents.to(vae_device)
 
             # unscale/denormalize the latents
             # denormalize with the mean and std if available and not None
@@ -890,6 +915,7 @@ class FKDStableDiffusionXL(
 # FK Steering Change
 def latent_to_decode(*, model, output_type, latents):
     if not output_type == "latent":
+        vae_device = next(iter(model.vae.parameters())).device
         # make sure the VAE is in float32 mode, as it overflows in float16
         needs_upcasting = (
             model.vae.dtype == torch.float16 and model.vae.config.force_upcast
@@ -898,12 +924,16 @@ def latent_to_decode(*, model, output_type, latents):
         if needs_upcasting:
             model.upcast_vae()
             latents = latents.to(
-                next(iter(model.vae.post_quant_conv.parameters())).dtype
+                device=vae_device,
+                dtype=next(iter(model.vae.post_quant_conv.parameters())).dtype,
             )
         elif latents.dtype != model.vae.dtype:
             if torch.backends.mps.is_available():
                 # some platforms (eg. apple mps) misbehave due to a pytorch bug: https://github.com/pytorch/pytorch/pull/99272
                 model.vae = model.vae.to(latents.dtype)
+            latents = latents.to(device=vae_device, dtype=model.vae.dtype)
+        elif latents.device != vae_device:
+            latents = latents.to(vae_device)
 
         # unscale/denormalize the latents
         # denormalize with the mean and std if available and not None

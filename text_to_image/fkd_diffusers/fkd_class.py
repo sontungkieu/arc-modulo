@@ -33,6 +33,7 @@ class FKD:
         reward_min_value: Minimum value for rewards (default: 0.0). Important for the Max potential type.
         latent_to_decode_fn: Function to decode latents to images, relevant for latent diffusion models (default: identity function).
         device: Device on which computations will be performed (default: CUDA).
+        record_trace: Whether to retain reward, weight, ESS, and resampling diagnostics for benchmark parity checks.
         **kwargs: Additional keyword arguments, unused.
     """
 
@@ -51,6 +52,7 @@ class FKD:
         reward_min_value: float = 0.0,
         latent_to_decode_fn: Callable[[torch.Tensor], torch.Tensor] = lambda x: x,
         device: torch.device = torch.device('cuda'),
+        record_trace: bool = False,
         **kwargs,
     ) -> None:
         # Initialize hyperparameters and functions
@@ -72,6 +74,8 @@ class FKD:
 
         # Initialize device and population reward state
         self.device = device
+        self.record_trace = record_trace
+        self.trace = []
 
         # initial rewards
         self.population_rs = (
@@ -106,6 +110,7 @@ class FKD:
         # Decode latents to population images and compute rewards
         population_images = self.latent_to_decode_fn(x0_preds)
         rs_candidates = self.reward_fn(population_images)
+        raw_rewards = rs_candidates.detach().clone() if self.record_trace else None
 
         # Compute importance weights
         if self.potential_type == PotentialType.MAX:
@@ -133,6 +138,9 @@ class FKD:
         w = torch.clamp(w, 0, 1e10)
         w[torch.isnan(w)] = 0.0
 
+        ess = None
+        indices = None
+        did_resample = False
         if self.adaptive_resampling or sampling_idx == self.time_steps - 1:
             # compute effective sample size
             normalized_w = w / w.sum()
@@ -144,11 +152,14 @@ class FKD:
                 indices = torch.multinomial(
                     w, num_samples=self.num_particles, replacement=True
                 )
+                did_resample = True
                 resampled_latents = latents[indices]
                 self.population_rs = rs_candidates[indices]
 
                 # Resample population images
-                resampled_images = population_images[indices]
+                resampled_images = population_images[
+                    indices.to(population_images.device)
+                ]
 
                 # Update product of potentials; used for max and add potentials
                 self.product_of_potentials = (
@@ -165,15 +176,33 @@ class FKD:
             indices = torch.multinomial(
                 w, num_samples=self.num_particles, replacement=True
             )
+            did_resample = True
             resampled_latents = latents[indices]
             self.population_rs = rs_candidates[indices]
 
             # Resample population images
-            resampled_images = population_images[indices]
+            resampled_images = population_images[
+                indices.to(population_images.device)
+            ]
 
             # Update product of potentials; used for max and add potentials
             self.product_of_potentials = (
                 self.product_of_potentials[indices] * w[indices]
+            )
+
+        if self.record_trace:
+            self.trace.append(
+                {
+                    "sampling_idx": int(sampling_idx),
+                    "raw_rewards": raw_rewards.float().cpu().tolist(),
+                    "candidate_rewards": rs_candidates.detach().float().cpu().tolist(),
+                    "weights": w.detach().float().cpu().tolist(),
+                    "ess": float(ess.detach().cpu()) if ess is not None else None,
+                    "resampled": did_resample,
+                    "indices": (
+                        indices.detach().cpu().tolist() if indices is not None else None
+                    ),
+                }
             )
 
         return resampled_latents, resampled_images

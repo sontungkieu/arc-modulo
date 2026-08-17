@@ -162,6 +162,38 @@ Graph không có lợi end-to-end ở batch/workload này. Sharding chỉ nên l
 model/reward pipeline JAX tương đương, nên không được gọi số `301x` là speedup
 của repo thật.
 
+## SDXL component placement trên T4 x2
+
+`bench_fk_components.py` kiểm tra fallback cho SDXL khi toàn bộ full-FK workload
+không vừa một GPU. Đây là component placement, không phải tensor/model sharding:
+
+- GPU 0 giữ UNet, scheduler state và latent trong toàn bộ denoising loop;
+- GPU 1 giữ hai text encoder, VAE và ImageReward;
+- prompt embedding chỉ chuyển GPU 1 -> GPU 0 một lần trước sampling;
+- ở mỗi checkpoint FK, `x0_pred` chuyển GPU 0 -> GPU 1 để decode/chấm reward,
+  rồi chỉ vector reward chuyển ngược về GPU 0 để resample.
+
+Đặt riêng text encoder trên GPU 1 là hợp lệ nhưng thường chưa tận dụng được GPU
+thứ hai vì encoder chỉ chạy một lần mỗi prompt. VAE và ImageReward mới là các
+component được gọi lặp tại checkpoint FK, nên canary đặt cả cụm auxiliary này
+trên GPU 1. Script báo riêng placement, parameter bytes, peak allocated/reserved
+memory và latency của từng layout.
+
+Gate có hai tầng. Cấu hình nhỏ phải cho output pixel single/split khớp đúng; sau
+đó còn phải khớp reward, importance weight, ESS và resampling indices tại từng
+checkpoint. Cấu hình paper-sized một prompt mới được dùng để xác nhận split
+layout có fit T4 16 GB hay không. Một prompt pass vẫn chỉ là feasibility canary,
+không phải reproduction GenEval hay bằng chứng cho metric tổng hợp của paper.
+
+```bash
+uv run --project reproduction --frozen \
+  python reproduction/megakernel/bench_fk_components.py \
+  --layout split --particles 4 --steps 100 --height 1024 --width 1024 \
+  --resampling-t-start 20 --resampling-t-end 80 --resample-frequency 20 \
+  --output outputs/fk-sdxl-split.json \
+  --array-output outputs/fk-sdxl-split.npy
+```
+
 ## Chạy local smoke test
 
 ```bash
