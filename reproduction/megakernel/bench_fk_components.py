@@ -50,9 +50,13 @@ def module_summary(module: Any) -> dict[str, Any] | None:
     }
 
 
-def synchronize_all(torch: Any) -> None:
-    for index in range(torch.cuda.device_count()):
-        torch.cuda.synchronize(index)
+def synchronize_devices(torch: Any, device_indices: set[int]) -> None:
+    for index in sorted(device_indices):
+        # Torch 2.4 may reject memory/synchronization calls for a secondary
+        # device before its CUDA context has been initialized. Entering the
+        # already-placed component's context avoids probing unused GPUs.
+        with torch.cuda.device(index):
+            torch.cuda.synchronize()
 
 
 def memory_summary(torch: Any) -> dict[str, Any]:
@@ -125,13 +129,14 @@ def main() -> None:
     torch.backends.cudnn.benchmark = False
     torch.set_float32_matmul_precision("highest")
 
-    for index in range(torch.cuda.device_count()):
-        torch.cuda.reset_peak_memory_stats(index)
-
     denoise_device = torch.device("cuda:0")
     auxiliary_device = (
         torch.device("cuda:1") if args.layout == "split" else denoise_device
     )
+    active_device_indices = {
+        int(denoise_device.index or 0),
+        int(auxiliary_device.index or 0),
+    }
     started = time.perf_counter()
     payload: dict[str, Any] = {
         "schema_version": 1,
@@ -169,7 +174,10 @@ def main() -> None:
         pipe.vae.to(auxiliary_device)
         pipe.text_encoder.to(auxiliary_device)
         pipe.text_encoder_2.to(auxiliary_device)
-        synchronize_all(torch)
+        synchronize_devices(torch, active_device_indices)
+        for index in sorted(active_device_indices):
+            with torch.cuda.device(index):
+                torch.cuda.reset_peak_memory_stats()
         payload["placement_s"] = time.perf_counter() - placement_started
 
         prompts = [args.prompt] * args.particles
@@ -189,7 +197,7 @@ def main() -> None:
                 negative_prompt=None,
                 negative_prompt_2=None,
             )
-        synchronize_all(torch)
+        synchronize_devices(torch, active_device_indices)
         payload["text_encode_s"] = time.perf_counter() - encode_started
 
         reward_started = time.perf_counter()
@@ -201,7 +209,7 @@ def main() -> None:
             images=[Image.new("RGB", (224, 224))] * args.particles,
             prompts=prompts,
         )
-        synchronize_all(torch)
+        synchronize_devices(torch, active_device_indices)
         payload["reward_preload_s"] = time.perf_counter() - reward_started
 
         latent_generator = torch.Generator(device=denoise_device).manual_seed(args.seed)
@@ -245,7 +253,7 @@ def main() -> None:
         torch.cuda.manual_seed_all(args.seed)
         np.random.seed(args.seed)
         sample_generator = torch.Generator(device=denoise_device).manual_seed(args.seed)
-        synchronize_all(torch)
+        synchronize_devices(torch, active_device_indices)
         sample_started = time.perf_counter()
         result = pipe(
             prompt=None,
@@ -264,7 +272,7 @@ def main() -> None:
             output_type="pil",
             fkd_args=fkd_args,
         )
-        synchronize_all(torch)
+        synchronize_devices(torch, active_device_indices)
         payload["sample_s"] = time.perf_counter() - sample_started
         payload["inference_s"] = payload["text_encode_s"] + payload["sample_s"]
 
