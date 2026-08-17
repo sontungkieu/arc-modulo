@@ -10,7 +10,7 @@ LLM cho H100/B200, nên không thể bê nguyên implementation đó sang P100/T
 TPU. CUDA Graph gom nhiều launch thành một replay; XLA hạ sampling loop thành
 compiled control flow; cả hai vẫn khác true megakernel.
 
-## Hai tầng benchmark
+## Ba tầng benchmark
 
 1. `bench_loop.py` dùng cùng một synthetic latent denoiser trên Torch và JAX để
    đo riêng Python/driver dispatch overhead:
@@ -47,13 +47,13 @@ Benchmark SD2.1 mặc định dùng mirror public
 `sd2-community/stable-diffusion-2-1`, giống runtime substitution của
 reproduction hiện có, vì model ID upstream không còn tải ổn định.
 
-Không pool kết quả hai tầng. Synthetic loop chỉ trả lời “launch overhead có đủ
-lớn để đáng tối ưu không”; model thật mới trả lời speedup end-to-end của
-denoising. FK + ImageReward/PIL sẽ là gate sau nếu denoising optimization thắng.
+Không pool kết quả ba tầng. Synthetic loop chỉ trả lời “launch overhead có đủ
+lớn để đáng tối ưu không”; model thật mới trả lời speedup end-to-end. Paired
+gate hiện đo cả denoising riêng và pipeline hoàn chỉnh với FK + ImageReward/PIL.
 
 ## Acceptance gate
 
-`compare_results.py` chỉ đề nghị dùng một mode khi:
+`compare_results.py` và paired harness chỉ đề nghị dùng một mode khi:
 
 - median latency nhanh hơn eager ít nhất 5% sau warmup;
 - probe output lệch tối đa không quá `5e-3`;
@@ -95,6 +95,34 @@ hơn eager; một mode chỉ được chấp nhận khi đồng thời qua corre
 | TPU synthetic loop | `jit(step)` | 0.52526 | 0.01955 | 26.87x | pass; first call 0.804 s |
 | TPU synthetic loop | `jit(lax.scan)` | 0.52526 | 0.00174 | 301.35x | pass; first call 1.332 s |
 
+Paired gate ở commit `6550efe` dùng cùng model đã load, prompt, initial latent,
+seed và scheduler cho eager/candidate. Tất cả dòng dưới dùng SD2.1, `4`
+particles, `100` steps; full FK còn dùng ImageReward, DDIM `eta=1` và SMC theo
+config paper. T4 runtime nhìn thấy hai GPU nhưng workload single-device chỉ dùng
+GPU 0; đây là latency một T4, không phải data-parallel throughput hai T4.
+
+| Hardware / workload | Mode | Eager (s) | Optimized (s) | Speedup | Numerical gate | Decision |
+| --- | --- | ---: | ---: | ---: | --- | --- |
+| P100 denoising | CUDA Graph UNet | 82.912 | 82.907 | 1.00006x | exact, 100/100 steps | reject: <5% |
+| P100 full FK | CUDA Graph UNet | 89.789 | 89.771 | 1.00019x | exact, 100/100 steps and pixels | reject: <5% |
+| T4 denoising | compiled UNet | 52.621 | 45.606 | 1.1538x | fail from step index 7; final max/mean error 4.568/0.140 | reject: incorrect |
+| T4 full FK | compiled UNet | 61.439 | 54.497 | 1.1274x | fail from step index 6; final pixel max/mean error 255/63.016 | reject: incorrect |
+| T4 denoising | CUDA Graph UNet | 52.576 | 52.651 | 0.9986x | exact, 100/100 steps | reject: slower |
+| T4 full FK | CUDA Graph UNet | 61.492 | 61.854 | 0.9942x | exact, 100/100 steps and pixels | reject: slower |
+
+`torch.compile` deterministic trong từng mode nhưng khác eager: sai số nhỏ tích
+lũy từ trước mốc SMC resampling đầu tiên ở step index `20`, rồi khuếch đại qua
+100 denoising steps. Vì vậy đây không phải randomness từ multinomial/ImageReward
+và cũng không phải output aliasing. Denoising compile first call trên T4 là
+`144.47 s`, steady-state `45.61 s`, break-even khoảng `14.1` batch calls; full FK
+là `104.10 s`, `54.50 s`, break-even khoảng `7.1`. Các break-even này chỉ là
+diagnostic vì correctness gate đã fail.
+
+CUDA Graph thực sự capture một lần, replay hàng trăm lần và không fallback,
+nhưng không cải thiện end-to-end. Trên P100, full FK tăng eager latency khoảng
+`6.88 s` so với denoising-only; trên T4 tăng khoảng `8.82 s`. Một T4 nhanh hơn
+P100 khoảng `1.58x` ở denoising và `1.46x` ở full FK trong contract này.
+
 Evidence:
 
 - [P100 r3](https://www.kaggle.com/code/bangchi/arc-megakernel-p100-r3-20260816)
@@ -116,14 +144,23 @@ Evidence:
   loop khỏi lợi ích compile riêng denoiser step. Tám TPU core được nhìn thấy,
   nhưng benchmark không khai báo sharding nên chỉ là single-default-device
   launch-overhead proxy, không phải multi-core hay full diffusion-model result.
+- [P100 paired real pipeline](https://www.kaggle.com/code/johnntlhudson/arc-fk-real-p100-r1-20260817)
+  dùng exact commit `6550efe`, KJO runtime 0.12.2 SHA256
+  `3344255e6d6e563b389caf346b2bb78bed87984875468050c57ddc97dc39acfd`,
+  Python 3.10.19, UV 0.11.13 và unchanged lock. Cả denoising lẫn full FK khớp
+  bit-for-bit nhưng CUDA Graph không đạt speed gate.
+- [T4 x2 paired real pipeline](https://www.kaggle.com/code/johnntlhudson/arc-fk-real-t4x2-r1-20260817)
+  dùng cùng commit/runtime/locked environment. Cả bốn paired steps hoàn tất;
+  compiled UNet nhanh nhưng sai, còn CUDA Graph đúng nhưng không nhanh.
 
-Kết luận tạm thời: tối ưu launch overhead cải thiện mạnh microbenchmark, nhưng
-không tự động chuyển thành tốc độ end-to-end khi UNet compute chiếm ưu thế.
-Trên T4, `torch.compile` là hướng đáng tiếp tục nếu tìm được correctness issue;
-trên P100 nên giữ eager. Sharding chỉ nên là fallback để fit model và phải đo
-PCIe overhead, không phải mặc định để tăng tốc. TPU `jit(lax.scan)` đã pass
-proxy gate rất mạnh; bước tiếp theo cần port một denoiser thật sang JAX và đo
-cả compile amortization lẫn device sharding trước khi áp kết luận 301x cho model.
+Kết luận hiện tại: chưa có mode nào vừa đúng vừa nhanh trên pipeline FK thật.
+Giữ eager cho P100/T4. `torch.compile` trên T4 chỉ đáng tiếp tục như một nhánh
+điều tra numerical lowering/precision, không được bật cho generation. CUDA
+Graph không có lợi end-to-end ở batch/workload này. Sharding chỉ nên là fallback
+để fit model và phải đo PCIe overhead, không phải mặc định để tăng tốc. TPU
+`jit(lax.scan)` vẫn chỉ pass proxy gate; repo FK hiện là PyTorch/CUDA và chưa có
+model/reward pipeline JAX tương đương, nên không được gọi số `301x` là speedup
+của repo thật.
 
 ## Chạy local smoke test
 
