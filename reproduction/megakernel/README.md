@@ -232,6 +232,33 @@ không giữ allocation tạm của phase trước. Đây là tối ưu peak mem
 mặc định xem là tối ưu latency. Parity single/split và trace FK vẫn là gate bắt
 buộc trước khi kết luận cấu hình lớn fit hay tương đương về số học.
 
+Canary [T4 x2 r3](https://www.kaggle.com/code/johnntlhudson/arc-fk-sdxl-components-t4x2-r3-20260819)
+dùng commit `1655c7961abe2da2ec4e2b90ee307840453b509b`, KJO runtime
+`0.12.2` đúng SHA256
+`3344255e6d6e563b389caf346b2bb78bed87984875468050c57ddc97dc39acfd`,
+Python `3.10.19`, UV `0.11.13`, unchanged lock và đúng hai Tesla T4 14.56
+GiB. Notebook hoàn tất trong `1355.027 s` theo monotonic internal clock.
+
+Parity r3 (`2 x 20 x 512`) pass bit-exact giữa single và split ở output pixel,
+reward, importance weight, ESS và resampling index. So với r2 dùng full batch,
+output hash và toàn bộ quyết định resampling vẫn giống hệt; reward/weight trace
+không bit-exact nhưng sai khác tối đa chỉ `4.768e-7` và pass với `atol=1e-6`.
+
+Full one-prompt gate (`4 x 100 x 1024`) giờ fit ở cả hai layout và cũng khớp
+bit-exact với nhau:
+
+| Layout | Sample time | GPU 0 peak allocated | GPU 1 peak allocated | Kết quả |
+| --- | ---: | ---: | ---: | --- |
+| single | 420.323 s | 11.48 GiB | 0 GiB | fit |
+| split | 422.043 s | 6.15 GiB | 6.59 GiB | fit |
+
+Split chậm hơn single `0.41%` trong phép đo one-shot này, nên GPU thứ hai là
+fallback giảm peak trên GPU 0 chứ không phải speedup. Kết quả quan trọng hơn là
+microbatch r3 làm workload canary đầy đủ fit trên đúng một T4 16 GB; decision là
+`microbatch-single-and-split-feasible`. Điều này chưa chứng minh toàn bộ GenEval
+hay metric tổng hợp của paper chạy đúng/đủ: cần chạy nhiều prompt tuần tự, giữ
+protocol đánh giá và đo tổng wall-time trước khi nâng verdict lên reproduction.
+
 ## Chạy local smoke test
 
 ```bash
