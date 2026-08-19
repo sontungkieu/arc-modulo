@@ -194,6 +194,34 @@ uv run --project reproduction --frozen \
   --array-output outputs/fk-sdxl-split.npy
 ```
 
+Canary [T4 x2 r2](https://www.kaggle.com/code/johnntlhudson/arc-fk-sdxl-components-t4x2-r2-20260819)
+dùng commit `1eca8f5`, KJO runtime `0.12.2` đúng SHA256
+`3344255e6d6e563b389caf346b2bb78bed87984875468050c57ddc97dc39acfd`,
+Python `3.10.19`, UV `0.11.13` và unchanged lock. Runtime xác minh đúng hai
+Tesla T4 14.56 GiB; notebook chạy `640.625 s` theo monotonic internal clock.
+
+Parity nhỏ (`2` particles, `20` steps, `512x512`) pass bit-exact: output hash
+giống nhau, pixel max/mean/RMSE đều bằng `0`, và toàn bộ reward, importance
+weight, ESS, resampling decision/index khớp ở cả năm checkpoint. Split giảm peak
+allocated của GPU 0 từ `10.79 GiB` xuống `5.05 GiB`, dùng `5.90 GiB` trên GPU 1,
+nhưng one-shot sample latency là `14.886 s` so với `14.760 s` của single
+(`0.992x`), nên canary này không cho thấy speedup; hai số này không thay thế
+paired repeated-latency gate.
+
+Paper-sized one-prompt gate (`4` particles, `100` steps, `1024x1024`) không
+fit ở cả hai layout:
+
+| Layout | GPU 0 peak allocated | GPU 1 peak allocated | Kết quả |
+| --- | ---: | ---: | --- |
+| single | 13.41 GiB | 0 GiB | OOM khi cần thêm 2.00 GiB trên GPU 0 |
+| split | 6.15 GiB | 12.55 GiB | OOM khi cần thêm 4.00 GiB trên GPU 1 |
+
+Như vậy component placement đã giải phóng đáng kể GPU 0 nhưng chỉ chuyển nút
+thắt sang cụm VAE + ImageReward trên GPU 1. Decision của canary là
+`do-not-enable`. Nhánh tiếp theo phải giảm peak auxiliary bằng decode/reward
+microbatch hoặc offload theo phase; chỉ chuyển thêm component giữa hai GPU sẽ
+không giải quyết full `4 x 100 x 1024` workload này.
+
 ## Chạy local smoke test
 
 ```bash
