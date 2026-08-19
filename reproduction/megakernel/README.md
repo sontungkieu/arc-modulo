@@ -189,6 +189,8 @@ không phải reproduction GenEval hay bằng chứng cho metric tổng hợp c�
 uv run --project reproduction --frozen \
   python reproduction/megakernel/bench_fk_components.py \
   --layout split --particles 4 --steps 100 --height 1024 --width 1024 \
+  --vae-decode-batch-size 1 --reward-batch-size 1 \
+  --empty-cache-between-auxiliary-phases \
   --resampling-t-start 20 --resampling-t-end 80 --resample-frequency 20 \
   --output outputs/fk-sdxl-split.json \
   --array-output outputs/fk-sdxl-split.npy
@@ -221,6 +223,14 @@ thắt sang cụm VAE + ImageReward trên GPU 1. Decision của canary là
 `do-not-enable`. Nhánh tiếp theo phải giảm peak auxiliary bằng decode/reward
 microbatch hoặc offload theo phase; chỉ chuyển thêm component giữa hai GPU sẽ
 không giải quyết full `4 x 100 x 1024` workload này.
+
+R3 giữ nguyên đường mặc định của pipeline khi hai batch-size bằng `0`, nhưng
+canary bật VAE decode và ImageReward microbatch bằng `1`. VAE áp dụng policy đó
+cho cả các checkpoint FK lẫn final decode; sau khi ảnh đã được postprocess sang
+CPU, tùy chọn cleanup giải phóng CUDA cache trước/sau reward và sau preload để
+không giữ allocation tạm của phase trước. Đây là tối ưu peak memory, không được
+mặc định xem là tối ưu latency. Parity single/split và trace FK vẫn là gate bắt
+buộc trước khi kết luận cấu hình lớn fit hay tương đương về số học.
 
 ## Chạy local smoke test
 

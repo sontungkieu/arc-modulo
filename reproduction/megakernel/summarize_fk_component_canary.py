@@ -22,19 +22,22 @@ def main() -> None:
         and parity.get("numerical_match")
     )
     full_split_fits = bool(full.get("split_fits"))
+    full_single_fits = bool(full.get("single_fits"))
+    if parity_pass and full_split_fits and full_single_fits:
+        decision = "microbatch-single-and-split-feasible"
+    elif parity_pass and full_split_fits:
+        decision = "split-components-feasible"
+    else:
+        decision = "do-not-enable"
     payload = {
         "schema_version": 1,
         "benchmark": "fk_steering_sdxl_t4x2_component_canary",
         "parity_pass": parity_pass,
         "full_split_fits": full_split_fits,
-        "full_single_fits": bool(full.get("single_fits")),
+        "full_single_fits": full_single_fits,
         "full_single_vs_split_verdict": full.get("verdict"),
         "passed": parity_pass and full_split_fits,
-        "decision": (
-            "split-components-feasible"
-            if parity_pass and full_split_fits
-            else "do-not-enable"
-        ),
+        "decision": decision,
         "evidence_boundary": (
             "One prompt canary only; passing does not reproduce GenEval or the "
             "paper's aggregate metrics."

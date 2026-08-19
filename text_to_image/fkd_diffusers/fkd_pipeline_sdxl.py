@@ -700,12 +700,41 @@ class FKDStableDiffusionXL(
                     "FK reward prompts are required when precomputed prompt "
                     "embeddings are supplied"
                 )
-            rewards = get_reward_function(
-                fkd_args["guidance_reward_fn"], 
-                images=imagesx, 
-                prompts=reward_prompts,
-                metric_to_chase=fkd_args.get("metric_to_chase", None)
+            if isinstance(reward_prompts, str):
+                reward_prompts = [reward_prompts] * len(imagesx)
+            else:
+                reward_prompts = list(reward_prompts)
+            if len(reward_prompts) != len(imagesx):
+                raise ValueError(
+                    "FK reward prompt count must match the decoded image count"
+                )
+
+            if fkd_args.get("empty_cache_between_auxiliary_phases", False):
+                vae_device = next(iter(self.vae.parameters())).device
+                if vae_device.type == "cuda":
+                    with torch.cuda.device(vae_device):
+                        torch.cuda.empty_cache()
+
+            reward_batch_size = _effective_batch_size(
+                fkd_args.get("reward_batch_size"), len(imagesx)
             )
+            rewards = []
+            for start in range(0, len(imagesx), reward_batch_size):
+                stop = min(start + reward_batch_size, len(imagesx))
+                rewards.extend(
+                    get_reward_function(
+                        fkd_args["guidance_reward_fn"],
+                        images=imagesx[start:stop],
+                        prompts=reward_prompts[start:stop],
+                        metric_to_chase=fkd_args.get("metric_to_chase", None),
+                    )
+                )
+
+            if fkd_args.get("empty_cache_between_auxiliary_phases", False):
+                vae_device = next(iter(self.vae.parameters())).device
+                if vae_device.type == "cuda":
+                    with torch.cuda.device(vae_device):
+                        torch.cuda.empty_cache()
 
             # FK state and multinomial resampling follow the latent/UNet
             # device. Reward inference may run on a different GPU.
@@ -715,7 +744,10 @@ class FKDStableDiffusionXL(
         if fkd_args is not None and fkd_args['use_smc']:
             fkd = FKD(
                 latent_to_decode_fn=lambda x: latent_to_decode(
-                    model=self, output_type=output_type, latents=x
+                    model=self,
+                    output_type=output_type,
+                    latents=x,
+                    batch_size=fkd_args.get("vae_decode_batch_size"),
                 ),
                 reward_fn=postprocess_and_apply_reward_fn,
                 **fkd_args,
@@ -838,62 +870,16 @@ class FKDStableDiffusionXL(
         if fkd_args is not None and fkd_args["use_smc"]:
             self._fkd_trace = fkd.trace
 
-        if not output_type == "latent":
-            vae_device = next(iter(self.vae.parameters())).device
-            # make sure the VAE is in float32 mode, as it overflows in float16
-            needs_upcasting = (
-                self.vae.dtype == torch.float16 and self.vae.config.force_upcast
-            )
-
-            if needs_upcasting:
-                self.upcast_vae()
-                latents = latents.to(
-                    device=vae_device,
-                    dtype=next(iter(self.vae.post_quant_conv.parameters())).dtype,
-                )
-            elif latents.dtype != self.vae.dtype:
-                if torch.backends.mps.is_available():
-                    # some platforms (eg. apple mps) misbehave due to a pytorch bug: https://github.com/pytorch/pytorch/pull/99272
-                    self.vae = self.vae.to(latents.dtype)
-                latents = latents.to(device=vae_device, dtype=self.vae.dtype)
-            elif latents.device != vae_device:
-                latents = latents.to(vae_device)
-
-            # unscale/denormalize the latents
-            # denormalize with the mean and std if available and not None
-            has_latents_mean = (
-                hasattr(self.vae.config, "latents_mean")
-                and self.vae.config.latents_mean is not None
-            )
-            has_latents_std = (
-                hasattr(self.vae.config, "latents_std")
-                and self.vae.config.latents_std is not None
-            )
-            if has_latents_mean and has_latents_std:
-                latents_mean = (
-                    torch.tensor(self.vae.config.latents_mean)
-                    .view(1, 4, 1, 1)
-                    .to(latents.device, latents.dtype)
-                )
-                latents_std = (
-                    torch.tensor(self.vae.config.latents_std)
-                    .view(1, 4, 1, 1)
-                    .to(latents.device, latents.dtype)
-                )
-                latents = (
-                    latents * latents_std / self.vae.config.scaling_factor
-                    + latents_mean
-                )
-            else:
-                latents = latents / self.vae.config.scaling_factor
-
-            image = self.vae.decode(latents, return_dict=False)[0]
-
-            # cast back to fp16 if needed
-            if needs_upcasting:
-                self.vae.to(dtype=torch.float16)
-        else:
-            image = latents
+        image = latent_to_decode(
+            model=self,
+            output_type=output_type,
+            latents=latents,
+            batch_size=(
+                fkd_args.get("vae_decode_batch_size")
+                if fkd_args is not None
+                else None
+            ),
+        )
 
         if not output_type == "latent":
             # apply watermark if available
@@ -913,7 +899,15 @@ class FKDStableDiffusionXL(
 
                 
 # FK Steering Change
-def latent_to_decode(*, model, output_type, latents):
+def _effective_batch_size(batch_size, batch_length):
+    if batch_length < 1:
+        raise ValueError("batch_length must be positive")
+    if batch_size is None or batch_size <= 0:
+        return batch_length
+    return min(batch_size, batch_length)
+
+
+def latent_to_decode(*, model, output_type, latents, batch_size=None):
     if not output_type == "latent":
         vae_device = next(iter(model.vae.parameters())).device
         # make sure the VAE is in float32 mode, as it overflows in float16
@@ -962,11 +956,23 @@ def latent_to_decode(*, model, output_type, latents):
         else:
             latents = latents / model.vae.config.scaling_factor
 
-        image = model.vae.decode(latents, return_dict=False)[0]
-
-        # cast back to fp16 if needed
-        if needs_upcasting:
-            model.vae.to(dtype=torch.float16)
+        decode_batch_size = _effective_batch_size(batch_size, len(latents))
+        try:
+            decoded_batches = [
+                model.vae.decode(
+                    latents[start : start + decode_batch_size], return_dict=False
+                )[0]
+                for start in range(0, len(latents), decode_batch_size)
+            ]
+            image = (
+                decoded_batches[0]
+                if len(decoded_batches) == 1
+                else torch.cat(decoded_batches, dim=0)
+            )
+        finally:
+            # cast back to fp16 if needed, including after a failed decode
+            if needs_upcasting:
+                model.vae.to(dtype=torch.float16)
     else:
         image = latents
 

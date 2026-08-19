@@ -240,6 +240,53 @@ class ComponentPlacementCanaryTest(unittest.TestCase):
             self.assertTrue(payload["passed"])
             self.assertEqual(payload["decision"], "split-components-feasible")
 
+    def test_summary_distinguishes_when_microbatch_single_also_fits(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            parity_path = root / "parity.json"
+            full_path = root / "full.json"
+            output_path = root / "summary.json"
+            parity_path.write_text(
+                json.dumps(
+                    {
+                        "numerical_comparison_available": True,
+                        "numerical_match": True,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            full_path.write_text(
+                json.dumps(
+                    {
+                        "split_fits": True,
+                        "single_fits": True,
+                        "verdict": "split_matches_single",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(ROOT / "summarize_fk_component_canary.py"),
+                    "--parity",
+                    str(parity_path),
+                    "--full",
+                    str(full_path),
+                    "--output",
+                    str(output_path),
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            payload = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertTrue(payload["passed"])
+            self.assertEqual(
+                payload["decision"], "microbatch-single-and-split-feasible"
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

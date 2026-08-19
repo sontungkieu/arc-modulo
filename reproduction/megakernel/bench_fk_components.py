@@ -104,6 +104,23 @@ def main() -> None:
     parser.add_argument("--resample-frequency", type=int, default=20)
     parser.add_argument("--resampling-t-start", type=int, default=20)
     parser.add_argument("--resampling-t-end", type=int, default=80)
+    parser.add_argument(
+        "--vae-decode-batch-size",
+        type=int,
+        default=0,
+        help="VAE decode microbatch size; 0 keeps the full particle batch.",
+    )
+    parser.add_argument(
+        "--reward-batch-size",
+        type=int,
+        default=0,
+        help="ImageReward microbatch size; 0 keeps the full particle batch.",
+    )
+    parser.add_argument(
+        "--empty-cache-between-auxiliary-phases",
+        action="store_true",
+        help="Release cached VAE blocks before ImageReward inference.",
+    )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--array-output", type=Path)
     args = parser.parse_args()
@@ -112,6 +129,8 @@ def main() -> None:
         raise ValueError("full FK canary requires at least two particles and steps")
     if args.resampling_t_end >= args.steps:
         raise ValueError("resampling_t_end must be smaller than steps")
+    if args.vae_decode_batch_size < 0 or args.reward_batch_size < 0:
+        raise ValueError("microbatch sizes must be nonnegative")
 
     import torch
     from PIL import Image
@@ -152,6 +171,11 @@ def main() -> None:
         "eta": args.eta,
         "seed": args.seed,
         "prompt": args.prompt,
+        "vae_decode_batch_size": args.vae_decode_batch_size,
+        "reward_batch_size": args.reward_batch_size,
+        "empty_cache_between_auxiliary_phases": (
+            args.empty_cache_between_auxiliary_phases
+        ),
         "denoise_device": str(denoise_device),
         "auxiliary_device": str(auxiliary_device),
         "status": "starting",
@@ -204,13 +228,20 @@ def main() -> None:
         reward_module.REWARDS_DICT["ImageReward"] = reward_module.rm_load(
             "ImageReward-v1.0", device=auxiliary_device
         )
-        reward_module.get_reward_function(
-            "ImageReward",
-            images=[Image.new("RGB", (224, 224))] * args.particles,
-            prompts=prompts,
-        )
+        reward_preload_batch_size = args.reward_batch_size or args.particles
+        preload_images = [Image.new("RGB", (224, 224))] * args.particles
+        for start in range(0, args.particles, reward_preload_batch_size):
+            stop = min(start + reward_preload_batch_size, args.particles)
+            reward_module.get_reward_function(
+                "ImageReward",
+                images=preload_images[start:stop],
+                prompts=prompts[start:stop],
+            )
         synchronize_devices(torch, active_device_indices)
         payload["reward_preload_s"] = time.perf_counter() - reward_started
+        if args.empty_cache_between_auxiliary_phases:
+            with torch.cuda.device(auxiliary_device):
+                torch.cuda.empty_cache()
 
         latent_generator = torch.Generator(device=denoise_device).manual_seed(args.seed)
         initial_latents = torch.randn(
@@ -244,6 +275,11 @@ def main() -> None:
             "execution_device": str(denoise_device),
             "reward_prompts": prompts,
             "record_trace": True,
+            "vae_decode_batch_size": args.vae_decode_batch_size,
+            "reward_batch_size": args.reward_batch_size,
+            "empty_cache_between_auxiliary_phases": (
+                args.empty_cache_between_auxiliary_phases
+            ),
         }
         payload["fkd_args"] = {
             key: value for key, value in fkd_args.items() if key != "reward_prompts"
